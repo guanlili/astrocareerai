@@ -9,38 +9,329 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MeRouteImport } from './routes/me'
+import { Route as GrowthRouteImport } from './routes/growth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeachersIndexRouteImport } from './routes/teachers.index'
+import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as TeachersIdRouteImport } from './routes/teachers.$id'
+import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
+import { Route as TeacherScheduleRouteImport } from './routes/teacher.schedule'
+import { Route as TeacherPricingRouteImport } from './routes/teacher.pricing'
+import { Route as TeacherEarningsRouteImport } from './routes/teacher.earnings'
+import { Route as TeacherAvatarRouteImport } from './routes/teacher.avatar'
+import { Route as TeacherAnalyticsRouteImport } from './routes/teacher.analytics'
+import { Route as ReportSessionIdRouteImport } from './routes/report.$sessionId'
+import { Route as ChatTeacherIdRouteImport } from './routes/chat.$teacherId'
+import { Route as BookingTeacherIdRouteImport } from './routes/booking.$teacherId'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTrainingRouteImport } from './routes/admin.training'
+import { Route as AdminReviewRouteImport } from './routes/admin.review'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminContentRouteImport } from './routes/admin.content'
+import { Route as AdminComplianceRouteImport } from './routes/admin.compliance'
 
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrowthRoute = GrowthRouteImport.update({
+  id: '/growth',
+  path: '/growth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeachersIndexRoute = TeachersIndexRouteImport.update({
+  id: '/teachers/',
+  path: '/teachers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherIndexRoute = TeacherIndexRouteImport.update({
+  id: '/teacher/',
+  path: '/teacher/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeachersIdRoute = TeachersIdRouteImport.update({
+  id: '/teachers/$id',
+  path: '/teachers/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherStudentsRoute = TeacherStudentsRouteImport.update({
+  id: '/teacher/students',
+  path: '/teacher/students',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherScheduleRoute = TeacherScheduleRouteImport.update({
+  id: '/teacher/schedule',
+  path: '/teacher/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherPricingRoute = TeacherPricingRouteImport.update({
+  id: '/teacher/pricing',
+  path: '/teacher/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherEarningsRoute = TeacherEarningsRouteImport.update({
+  id: '/teacher/earnings',
+  path: '/teacher/earnings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherAvatarRoute = TeacherAvatarRouteImport.update({
+  id: '/teacher/avatar',
+  path: '/teacher/avatar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherAnalyticsRoute = TeacherAnalyticsRouteImport.update({
+  id: '/teacher/analytics',
+  path: '/teacher/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportSessionIdRoute = ReportSessionIdRouteImport.update({
+  id: '/report/$sessionId',
+  path: '/report/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatTeacherIdRoute = ChatTeacherIdRouteImport.update({
+  id: '/chat/$teacherId',
+  path: '/chat/$teacherId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingTeacherIdRoute = BookingTeacherIdRouteImport.update({
+  id: '/booking/$teacherId',
+  path: '/booking/$teacherId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTrainingRoute = AdminTrainingRouteImport.update({
+  id: '/admin/training',
+  path: '/admin/training',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewRoute = AdminReviewRouteImport.update({
+  id: '/admin/review',
+  path: '/admin/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/admin/payments',
+  path: '/admin/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/admin/content',
+  path: '/admin/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminComplianceRoute = AdminComplianceRouteImport.update({
+  id: '/admin/compliance',
+  path: '/admin/compliance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/growth': typeof GrowthRoute
+  '/me': typeof MeRoute
+  '/admin/compliance': typeof AdminComplianceRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/review': typeof AdminReviewRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/booking/$teacherId': typeof BookingTeacherIdRoute
+  '/chat/$teacherId': typeof ChatTeacherIdRoute
+  '/report/$sessionId': typeof ReportSessionIdRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
+  '/teacher/avatar': typeof TeacherAvatarRoute
+  '/teacher/earnings': typeof TeacherEarningsRoute
+  '/teacher/pricing': typeof TeacherPricingRoute
+  '/teacher/schedule': typeof TeacherScheduleRoute
+  '/teacher/students': typeof TeacherStudentsRoute
+  '/teachers/$id': typeof TeachersIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/teacher/': typeof TeacherIndexRoute
+  '/teachers/': typeof TeachersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/growth': typeof GrowthRoute
+  '/me': typeof MeRoute
+  '/admin/compliance': typeof AdminComplianceRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/review': typeof AdminReviewRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/booking/$teacherId': typeof BookingTeacherIdRoute
+  '/chat/$teacherId': typeof ChatTeacherIdRoute
+  '/report/$sessionId': typeof ReportSessionIdRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
+  '/teacher/avatar': typeof TeacherAvatarRoute
+  '/teacher/earnings': typeof TeacherEarningsRoute
+  '/teacher/pricing': typeof TeacherPricingRoute
+  '/teacher/schedule': typeof TeacherScheduleRoute
+  '/teacher/students': typeof TeacherStudentsRoute
+  '/teachers/$id': typeof TeachersIdRoute
+  '/admin': typeof AdminIndexRoute
+  '/teacher': typeof TeacherIndexRoute
+  '/teachers': typeof TeachersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/growth': typeof GrowthRoute
+  '/me': typeof MeRoute
+  '/admin/compliance': typeof AdminComplianceRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/review': typeof AdminReviewRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/booking/$teacherId': typeof BookingTeacherIdRoute
+  '/chat/$teacherId': typeof ChatTeacherIdRoute
+  '/report/$sessionId': typeof ReportSessionIdRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
+  '/teacher/avatar': typeof TeacherAvatarRoute
+  '/teacher/earnings': typeof TeacherEarningsRoute
+  '/teacher/pricing': typeof TeacherPricingRoute
+  '/teacher/schedule': typeof TeacherScheduleRoute
+  '/teacher/students': typeof TeacherStudentsRoute
+  '/teachers/$id': typeof TeachersIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/teacher/': typeof TeacherIndexRoute
+  '/teachers/': typeof TeachersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/growth'
+    | '/me'
+    | '/admin/compliance'
+    | '/admin/content'
+    | '/admin/payments'
+    | '/admin/review'
+    | '/admin/training'
+    | '/admin/users'
+    | '/booking/$teacherId'
+    | '/chat/$teacherId'
+    | '/report/$sessionId'
+    | '/teacher/analytics'
+    | '/teacher/avatar'
+    | '/teacher/earnings'
+    | '/teacher/pricing'
+    | '/teacher/schedule'
+    | '/teacher/students'
+    | '/teachers/$id'
+    | '/admin/'
+    | '/teacher/'
+    | '/teachers/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/growth'
+    | '/me'
+    | '/admin/compliance'
+    | '/admin/content'
+    | '/admin/payments'
+    | '/admin/review'
+    | '/admin/training'
+    | '/admin/users'
+    | '/booking/$teacherId'
+    | '/chat/$teacherId'
+    | '/report/$sessionId'
+    | '/teacher/analytics'
+    | '/teacher/avatar'
+    | '/teacher/earnings'
+    | '/teacher/pricing'
+    | '/teacher/schedule'
+    | '/teacher/students'
+    | '/teachers/$id'
+    | '/admin'
+    | '/teacher'
+    | '/teachers'
+  id:
+    | '__root__'
+    | '/'
+    | '/growth'
+    | '/me'
+    | '/admin/compliance'
+    | '/admin/content'
+    | '/admin/payments'
+    | '/admin/review'
+    | '/admin/training'
+    | '/admin/users'
+    | '/booking/$teacherId'
+    | '/chat/$teacherId'
+    | '/report/$sessionId'
+    | '/teacher/analytics'
+    | '/teacher/avatar'
+    | '/teacher/earnings'
+    | '/teacher/pricing'
+    | '/teacher/schedule'
+    | '/teacher/students'
+    | '/teachers/$id'
+    | '/admin/'
+    | '/teacher/'
+    | '/teachers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GrowthRoute: typeof GrowthRoute
+  MeRoute: typeof MeRoute
+  AdminComplianceRoute: typeof AdminComplianceRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminReviewRoute: typeof AdminReviewRoute
+  AdminTrainingRoute: typeof AdminTrainingRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  BookingTeacherIdRoute: typeof BookingTeacherIdRoute
+  ChatTeacherIdRoute: typeof ChatTeacherIdRoute
+  ReportSessionIdRoute: typeof ReportSessionIdRoute
+  TeacherAnalyticsRoute: typeof TeacherAnalyticsRoute
+  TeacherAvatarRoute: typeof TeacherAvatarRoute
+  TeacherEarningsRoute: typeof TeacherEarningsRoute
+  TeacherPricingRoute: typeof TeacherPricingRoute
+  TeacherScheduleRoute: typeof TeacherScheduleRoute
+  TeacherStudentsRoute: typeof TeacherStudentsRoute
+  TeachersIdRoute: typeof TeachersIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  TeacherIndexRoute: typeof TeacherIndexRoute
+  TeachersIndexRoute: typeof TeachersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/growth': {
+      id: '/growth'
+      path: '/growth'
+      fullPath: '/growth'
+      preLoaderRoute: typeof GrowthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +339,166 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teachers/': {
+      id: '/teachers/'
+      path: '/teachers'
+      fullPath: '/teachers/'
+      preLoaderRoute: typeof TeachersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/': {
+      id: '/teacher/'
+      path: '/teacher'
+      fullPath: '/teacher/'
+      preLoaderRoute: typeof TeacherIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teachers/$id': {
+      id: '/teachers/$id'
+      path: '/teachers/$id'
+      fullPath: '/teachers/$id'
+      preLoaderRoute: typeof TeachersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/students': {
+      id: '/teacher/students'
+      path: '/teacher/students'
+      fullPath: '/teacher/students'
+      preLoaderRoute: typeof TeacherStudentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/schedule': {
+      id: '/teacher/schedule'
+      path: '/teacher/schedule'
+      fullPath: '/teacher/schedule'
+      preLoaderRoute: typeof TeacherScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/pricing': {
+      id: '/teacher/pricing'
+      path: '/teacher/pricing'
+      fullPath: '/teacher/pricing'
+      preLoaderRoute: typeof TeacherPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/earnings': {
+      id: '/teacher/earnings'
+      path: '/teacher/earnings'
+      fullPath: '/teacher/earnings'
+      preLoaderRoute: typeof TeacherEarningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/avatar': {
+      id: '/teacher/avatar'
+      path: '/teacher/avatar'
+      fullPath: '/teacher/avatar'
+      preLoaderRoute: typeof TeacherAvatarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/analytics': {
+      id: '/teacher/analytics'
+      path: '/teacher/analytics'
+      fullPath: '/teacher/analytics'
+      preLoaderRoute: typeof TeacherAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report/$sessionId': {
+      id: '/report/$sessionId'
+      path: '/report/$sessionId'
+      fullPath: '/report/$sessionId'
+      preLoaderRoute: typeof ReportSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$teacherId': {
+      id: '/chat/$teacherId'
+      path: '/chat/$teacherId'
+      fullPath: '/chat/$teacherId'
+      preLoaderRoute: typeof ChatTeacherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking/$teacherId': {
+      id: '/booking/$teacherId'
+      path: '/booking/$teacherId'
+      fullPath: '/booking/$teacherId'
+      preLoaderRoute: typeof BookingTeacherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/training': {
+      id: '/admin/training'
+      path: '/admin/training'
+      fullPath: '/admin/training'
+      preLoaderRoute: typeof AdminTrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/review': {
+      id: '/admin/review'
+      path: '/admin/review'
+      fullPath: '/admin/review'
+      preLoaderRoute: typeof AdminReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/admin/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/compliance': {
+      id: '/admin/compliance'
+      path: '/admin/compliance'
+      fullPath: '/admin/compliance'
+      preLoaderRoute: typeof AdminComplianceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GrowthRoute: GrowthRoute,
+  MeRoute: MeRoute,
+  AdminComplianceRoute: AdminComplianceRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminReviewRoute: AdminReviewRoute,
+  AdminTrainingRoute: AdminTrainingRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  BookingTeacherIdRoute: BookingTeacherIdRoute,
+  ChatTeacherIdRoute: ChatTeacherIdRoute,
+  ReportSessionIdRoute: ReportSessionIdRoute,
+  TeacherAnalyticsRoute: TeacherAnalyticsRoute,
+  TeacherAvatarRoute: TeacherAvatarRoute,
+  TeacherEarningsRoute: TeacherEarningsRoute,
+  TeacherPricingRoute: TeacherPricingRoute,
+  TeacherScheduleRoute: TeacherScheduleRoute,
+  TeacherStudentsRoute: TeacherStudentsRoute,
+  TeachersIdRoute: TeachersIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  TeacherIndexRoute: TeacherIndexRoute,
+  TeachersIndexRoute: TeachersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
