@@ -9,10 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MeRouteImport } from './routes/me'
+import { Route as GrowthRouteImport } from './routes/growth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeachersIndexRouteImport } from './routes/teachers.index'
 import { Route as TeachersIdRouteImport } from './routes/teachers.$id'
+import { Route as ReportSessionIdRouteImport } from './routes/report.$sessionId'
+import { Route as ChatTeacherIdRouteImport } from './routes/chat.$teacherId'
+import { Route as BookingTeacherIdRouteImport } from './routes/booking.$teacherId'
 
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrowthRoute = GrowthRouteImport.update({
+  id: '/growth',
+  path: '/growth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -28,39 +43,113 @@ const TeachersIdRoute = TeachersIdRouteImport.update({
   path: '/teachers/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportSessionIdRoute = ReportSessionIdRouteImport.update({
+  id: '/report/$sessionId',
+  path: '/report/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatTeacherIdRoute = ChatTeacherIdRouteImport.update({
+  id: '/chat/$teacherId',
+  path: '/chat/$teacherId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingTeacherIdRoute = BookingTeacherIdRouteImport.update({
+  id: '/booking/$teacherId',
+  path: '/booking/$teacherId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/growth': typeof GrowthRoute
+  '/me': typeof MeRoute
+  '/booking/$teacherId': typeof BookingTeacherIdRoute
+  '/chat/$teacherId': typeof ChatTeacherIdRoute
+  '/report/$sessionId': typeof ReportSessionIdRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/teachers/': typeof TeachersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/growth': typeof GrowthRoute
+  '/me': typeof MeRoute
+  '/booking/$teacherId': typeof BookingTeacherIdRoute
+  '/chat/$teacherId': typeof ChatTeacherIdRoute
+  '/report/$sessionId': typeof ReportSessionIdRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/teachers': typeof TeachersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/growth': typeof GrowthRoute
+  '/me': typeof MeRoute
+  '/booking/$teacherId': typeof BookingTeacherIdRoute
+  '/chat/$teacherId': typeof ChatTeacherIdRoute
+  '/report/$sessionId': typeof ReportSessionIdRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/teachers/': typeof TeachersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/teachers/$id' | '/teachers/'
+  fullPaths:
+    | '/'
+    | '/growth'
+    | '/me'
+    | '/booking/$teacherId'
+    | '/chat/$teacherId'
+    | '/report/$sessionId'
+    | '/teachers/$id'
+    | '/teachers/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/teachers/$id' | '/teachers'
-  id: '__root__' | '/' | '/teachers/$id' | '/teachers/'
+  to:
+    | '/'
+    | '/growth'
+    | '/me'
+    | '/booking/$teacherId'
+    | '/chat/$teacherId'
+    | '/report/$sessionId'
+    | '/teachers/$id'
+    | '/teachers'
+  id:
+    | '__root__'
+    | '/'
+    | '/growth'
+    | '/me'
+    | '/booking/$teacherId'
+    | '/chat/$teacherId'
+    | '/report/$sessionId'
+    | '/teachers/$id'
+    | '/teachers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GrowthRoute: typeof GrowthRoute
+  MeRoute: typeof MeRoute
+  BookingTeacherIdRoute: typeof BookingTeacherIdRoute
+  ChatTeacherIdRoute: typeof ChatTeacherIdRoute
+  ReportSessionIdRoute: typeof ReportSessionIdRoute
   TeachersIdRoute: typeof TeachersIdRoute
   TeachersIndexRoute: typeof TeachersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/growth': {
+      id: '/growth'
+      path: '/growth'
+      fullPath: '/growth'
+      preLoaderRoute: typeof GrowthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +171,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeachersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/report/$sessionId': {
+      id: '/report/$sessionId'
+      path: '/report/$sessionId'
+      fullPath: '/report/$sessionId'
+      preLoaderRoute: typeof ReportSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$teacherId': {
+      id: '/chat/$teacherId'
+      path: '/chat/$teacherId'
+      fullPath: '/chat/$teacherId'
+      preLoaderRoute: typeof ChatTeacherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking/$teacherId': {
+      id: '/booking/$teacherId'
+      path: '/booking/$teacherId'
+      fullPath: '/booking/$teacherId'
+      preLoaderRoute: typeof BookingTeacherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GrowthRoute: GrowthRoute,
+  MeRoute: MeRoute,
+  BookingTeacherIdRoute: BookingTeacherIdRoute,
+  ChatTeacherIdRoute: ChatTeacherIdRoute,
+  ReportSessionIdRoute: ReportSessionIdRoute,
   TeachersIdRoute: TeachersIdRoute,
   TeachersIndexRoute: TeachersIndexRoute,
 }
