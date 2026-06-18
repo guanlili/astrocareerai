@@ -61,7 +61,7 @@ function PaymentsPage() {
       </div>
 
       <div className="mt-4 rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
-        ⚠ 当前发现 2 单"支付成功但老师端未确认"，已自动加入对账队列，预计 5 分钟内补偿。
+        ⚠ 当前发现 2 单「支付成功但老师端未确认」，已自动加入对账队列，预计 5 分钟内补偿。
       </div>
     </AdminShell>
   );

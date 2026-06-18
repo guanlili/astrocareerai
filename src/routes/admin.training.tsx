@@ -25,7 +25,7 @@ const statusMap = {
 
 function TrainingPage() {
   return (
-    <AdminShell title="分身训练任务监控" subtitle="保障"老师上传即用"体验的关键后台">
+    <AdminShell title="分身训练任务监控" subtitle="保障「老师上传即用」体验的关键后台">
       <div className="grid gap-4 md:grid-cols-4">
         <KpiCard label="今日训练" value="48" unit="任务" delta="+12" />
         <KpiCard label="成功率（7 日）" value="94.2" unit="%" delta="+1.1pp" />
