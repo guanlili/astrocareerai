@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { PerspectiveSwitcher } from "./PerspectiveSwitcher";
 
-const items = [
+const items: { to: string; label: string; icon: any; exact?: boolean }[] = [
   { to: "/admin", label: "总览", icon: LayoutDashboard, exact: true },
   { to: "/admin/review", label: "老师入驻审核", icon: UserCheck },
   { to: "/admin/content", label: "题库 / 内容管理", icon: Database },

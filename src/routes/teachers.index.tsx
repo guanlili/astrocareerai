@@ -5,7 +5,7 @@ import { teachers } from "@/mock/teachers";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { Search, SlidersHorizontal } from "lucide-react";
 
-export const Route = createFileRoute("/teachers")({
+export const Route = createFileRoute("/teachers/")({
   head: () => ({
     meta: [
       { title: "找老师 · 面镜 MirrorHire" },
