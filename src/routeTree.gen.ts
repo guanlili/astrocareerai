@@ -14,6 +14,7 @@ import { Route as GrowthRouteImport } from './routes/growth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeachersIndexRouteImport } from './routes/teachers.index'
 import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeachersIdRouteImport } from './routes/teachers.$id'
 import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
 import { Route as TeacherScheduleRouteImport } from './routes/teacher.schedule'
@@ -24,6 +25,12 @@ import { Route as TeacherAnalyticsRouteImport } from './routes/teacher.analytics
 import { Route as ReportSessionIdRouteImport } from './routes/report.$sessionId'
 import { Route as ChatTeacherIdRouteImport } from './routes/chat.$teacherId'
 import { Route as BookingTeacherIdRouteImport } from './routes/booking.$teacherId'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTrainingRouteImport } from './routes/admin.training'
+import { Route as AdminReviewRouteImport } from './routes/admin.review'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminContentRouteImport } from './routes/admin.content'
+import { Route as AdminComplianceRouteImport } from './routes/admin.compliance'
 
 const MeRoute = MeRouteImport.update({
   id: '/me',
@@ -48,6 +55,11 @@ const TeachersIndexRoute = TeachersIndexRouteImport.update({
 const TeacherIndexRoute = TeacherIndexRouteImport.update({
   id: '/teacher/',
   path: '/teacher/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeachersIdRoute = TeachersIdRouteImport.update({
@@ -100,11 +112,47 @@ const BookingTeacherIdRoute = BookingTeacherIdRouteImport.update({
   path: '/booking/$teacherId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTrainingRoute = AdminTrainingRouteImport.update({
+  id: '/admin/training',
+  path: '/admin/training',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewRoute = AdminReviewRouteImport.update({
+  id: '/admin/review',
+  path: '/admin/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/admin/payments',
+  path: '/admin/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/admin/content',
+  path: '/admin/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminComplianceRoute = AdminComplianceRouteImport.update({
+  id: '/admin/compliance',
+  path: '/admin/compliance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/growth': typeof GrowthRoute
   '/me': typeof MeRoute
+  '/admin/compliance': typeof AdminComplianceRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/review': typeof AdminReviewRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/booking/$teacherId': typeof BookingTeacherIdRoute
   '/chat/$teacherId': typeof ChatTeacherIdRoute
   '/report/$sessionId': typeof ReportSessionIdRoute
@@ -115,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
   '/teachers/$id': typeof TeachersIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/teacher/': typeof TeacherIndexRoute
   '/teachers/': typeof TeachersIndexRoute
 }
@@ -122,6 +171,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/growth': typeof GrowthRoute
   '/me': typeof MeRoute
+  '/admin/compliance': typeof AdminComplianceRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/review': typeof AdminReviewRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/booking/$teacherId': typeof BookingTeacherIdRoute
   '/chat/$teacherId': typeof ChatTeacherIdRoute
   '/report/$sessionId': typeof ReportSessionIdRoute
@@ -132,6 +187,7 @@ export interface FileRoutesByTo {
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
   '/teachers/$id': typeof TeachersIdRoute
+  '/admin': typeof AdminIndexRoute
   '/teacher': typeof TeacherIndexRoute
   '/teachers': typeof TeachersIndexRoute
 }
@@ -140,6 +196,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/growth': typeof GrowthRoute
   '/me': typeof MeRoute
+  '/admin/compliance': typeof AdminComplianceRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/review': typeof AdminReviewRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/booking/$teacherId': typeof BookingTeacherIdRoute
   '/chat/$teacherId': typeof ChatTeacherIdRoute
   '/report/$sessionId': typeof ReportSessionIdRoute
@@ -150,6 +212,7 @@ export interface FileRoutesById {
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
   '/teachers/$id': typeof TeachersIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/teacher/': typeof TeacherIndexRoute
   '/teachers/': typeof TeachersIndexRoute
 }
@@ -159,6 +222,12 @@ export interface FileRouteTypes {
     | '/'
     | '/growth'
     | '/me'
+    | '/admin/compliance'
+    | '/admin/content'
+    | '/admin/payments'
+    | '/admin/review'
+    | '/admin/training'
+    | '/admin/users'
     | '/booking/$teacherId'
     | '/chat/$teacherId'
     | '/report/$sessionId'
@@ -169,6 +238,7 @@ export interface FileRouteTypes {
     | '/teacher/schedule'
     | '/teacher/students'
     | '/teachers/$id'
+    | '/admin/'
     | '/teacher/'
     | '/teachers/'
   fileRoutesByTo: FileRoutesByTo
@@ -176,6 +246,12 @@ export interface FileRouteTypes {
     | '/'
     | '/growth'
     | '/me'
+    | '/admin/compliance'
+    | '/admin/content'
+    | '/admin/payments'
+    | '/admin/review'
+    | '/admin/training'
+    | '/admin/users'
     | '/booking/$teacherId'
     | '/chat/$teacherId'
     | '/report/$sessionId'
@@ -186,6 +262,7 @@ export interface FileRouteTypes {
     | '/teacher/schedule'
     | '/teacher/students'
     | '/teachers/$id'
+    | '/admin'
     | '/teacher'
     | '/teachers'
   id:
@@ -193,6 +270,12 @@ export interface FileRouteTypes {
     | '/'
     | '/growth'
     | '/me'
+    | '/admin/compliance'
+    | '/admin/content'
+    | '/admin/payments'
+    | '/admin/review'
+    | '/admin/training'
+    | '/admin/users'
     | '/booking/$teacherId'
     | '/chat/$teacherId'
     | '/report/$sessionId'
@@ -203,6 +286,7 @@ export interface FileRouteTypes {
     | '/teacher/schedule'
     | '/teacher/students'
     | '/teachers/$id'
+    | '/admin/'
     | '/teacher/'
     | '/teachers/'
   fileRoutesById: FileRoutesById
@@ -211,6 +295,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GrowthRoute: typeof GrowthRoute
   MeRoute: typeof MeRoute
+  AdminComplianceRoute: typeof AdminComplianceRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminReviewRoute: typeof AdminReviewRoute
+  AdminTrainingRoute: typeof AdminTrainingRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   BookingTeacherIdRoute: typeof BookingTeacherIdRoute
   ChatTeacherIdRoute: typeof ChatTeacherIdRoute
   ReportSessionIdRoute: typeof ReportSessionIdRoute
@@ -221,6 +311,7 @@ export interface RootRouteChildren {
   TeacherScheduleRoute: typeof TeacherScheduleRoute
   TeacherStudentsRoute: typeof TeacherStudentsRoute
   TeachersIdRoute: typeof TeachersIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   TeacherIndexRoute: typeof TeacherIndexRoute
   TeachersIndexRoute: typeof TeachersIndexRoute
 }
@@ -260,6 +351,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher'
       fullPath: '/teacher/'
       preLoaderRoute: typeof TeacherIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teachers/$id': {
@@ -332,6 +430,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingTeacherIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/training': {
+      id: '/admin/training'
+      path: '/admin/training'
+      fullPath: '/admin/training'
+      preLoaderRoute: typeof AdminTrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/review': {
+      id: '/admin/review'
+      path: '/admin/review'
+      fullPath: '/admin/review'
+      preLoaderRoute: typeof AdminReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/admin/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/compliance': {
+      id: '/admin/compliance'
+      path: '/admin/compliance'
+      fullPath: '/admin/compliance'
+      preLoaderRoute: typeof AdminComplianceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -339,6 +479,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GrowthRoute: GrowthRoute,
   MeRoute: MeRoute,
+  AdminComplianceRoute: AdminComplianceRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminReviewRoute: AdminReviewRoute,
+  AdminTrainingRoute: AdminTrainingRoute,
+  AdminUsersRoute: AdminUsersRoute,
   BookingTeacherIdRoute: BookingTeacherIdRoute,
   ChatTeacherIdRoute: ChatTeacherIdRoute,
   ReportSessionIdRoute: ReportSessionIdRoute,
@@ -349,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherScheduleRoute: TeacherScheduleRoute,
   TeacherStudentsRoute: TeacherStudentsRoute,
   TeachersIdRoute: TeachersIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   TeacherIndexRoute: TeacherIndexRoute,
   TeachersIndexRoute: TeachersIndexRoute,
 }
