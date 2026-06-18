@@ -56,7 +56,7 @@ function TeacherDetail() {
               <div className="mt-1 text-muted-foreground">{t.title} · {t.company}</div>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {t.tags.map((tag) => (
+                {t.tags.map((tag: string) => (
                   <span key={tag} className="rounded-full bg-accent/60 px-2.5 py-0.5 text-xs text-muted-foreground">
                     {tag}
                   </span>
@@ -123,7 +123,7 @@ function TeacherDetail() {
           <div>
             <h2 className="font-display text-xl font-semibold">辅导亮点</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {t.highlights.map((h) => (
+              {t.highlights.map((h: string) => (
                 <div key={h} className="glass-panel rounded-lg p-4 text-sm">
                   <Check className="mr-2 inline h-4 w-4 text-success" />
                   {h}
