@@ -59,7 +59,7 @@ export type Student = {
   lastActive: string;
   intent: "high" | "medium" | "low";
   paid: boolean;
-  note: string;
+  note?: string;
 };
 
 const avatar = (s: string) => `https://api.dicebear.com/9.x/notionists/svg?seed=${s}`;
