@@ -1,8 +1,7 @@
-export type ChatMsg = {
-  role: "ai" | "user" | "system";
-  content: string;
-  meta?: string;
-};
+// ChatMsg 的唯一事实来源已上移到面试 Agent 的类型契约（§5.3），此处导入再导出以保持
+// 现有引用（chat.$teacherId.tsx 等）向后兼容。新增字段 questionId / feedback 均为可选。
+import type { ChatMsg, AnswerFeedback } from "@/agent/interview/types";
+export type { ChatMsg, AnswerFeedback };
 
 // 模拟面试对话示例（产品经理岗）
 export const mockInterviewScript: ChatMsg[] = [
@@ -76,6 +75,19 @@ export const reportData = {
     "准备 2 个失败项目复盘案例，按「事实-反思-改进」三段表达。",
     "建议预约陈昊老师的 1v1，针对终面进行 2 小时深度演练。",
   ],
+  // —— 以下为 §5.4 新增字段，报告页（report.$sessionId.tsx）后续接入下钻渲染 ——
+  // 每题反馈汇总（AnswerFeedback[]）。Mock 阶段留空，由 Agent 在真实会话中聚合产出。
+  perQuestion: [],
+  // 针对用户自定义关注点的专项点评，仅当 setup.customFocus 非空时生成。
+  customFocusFeedback: {
+    focus: "我容易紧张、答非所问",
+    assessment:
+      "整体表达比想象中稳，但在 ROI / 成本类追问下出现停顿和发散，说明对「先结论后展开」的训练还不够。",
+    actionItems: [
+      "用「结论先行 + 三点支撑」固定开场结构，压住发散倾向。",
+      "针对数据类追问准备万能框架：口径 → 归因 → 取舍。",
+    ],
+  },
 };
 
 export const growthTrend = [
