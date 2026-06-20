@@ -21,7 +21,7 @@ import {
   type QuestionNode,
   type TeacherAvatarConfig,
 } from "@/agent/interview";
-import { analyzeTeacherMaterial, llmStatus } from "@/llm/endpoints";
+import { analyzeTeacherMaterial, llmStatus, type LlmStatus } from "@/llm/endpoints";
 import {
   Rocket,
   Trash2,
@@ -79,9 +79,7 @@ function PublishPage() {
   const [material, setMaterial] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeMsg, setAnalyzeMsg] = useState<string | null>(null);
-  const [llm, setLlm] = useState<{ enabled: boolean; model: string; maskedKey: string } | null>(
-    null,
-  );
+  const [llm, setLlm] = useState<LlmStatus | null>(null);
 
   useEffect(() => setPublished(getPublishedTeachers()), []);
   useEffect(() => {
@@ -244,10 +242,14 @@ function PublishPage() {
                       ? "border-success/40 bg-success/10 text-success"
                       : "border-border bg-surface/60 text-muted-foreground"
                   }`}
-                  title={llm.enabled ? `${llm.model} · ${llm.maskedKey}` : "未配置密钥"}
+                  title={
+                    llm.enabled
+                      ? `${llm.model} · ${llm.maskedKey}`
+                      : `演示模式（Mock）· ${llm.reason ?? "未连接"}`
+                  }
                 >
                   <Sparkles className="h-3 w-3" />
-                  {llm.enabled ? `Qwen · ${llm.model} · ${llm.maskedKey}` : "演示模式"}
+                  {llm.enabled ? `Qwen · ${llm.model} · ${llm.maskedKey}` : "演示模式（Mock）"}
                 </span>
               )}
             </div>

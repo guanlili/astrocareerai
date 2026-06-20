@@ -44,15 +44,46 @@ export const llmComplete = createServerFn({ method: "POST" })
     }
   });
 
-/** LLM 配置状态（关键信息已遮蔽），供前端显示「由 Qwen 驱动 · sk-ws…tg3G」。 */
+export type LlmStatus = {
+  enabled: boolean; // 是否真正连得上（实测探活，而非仅有 key）
+  model: string;
+  maskedKey: string;
+  reason?: string; // 不可用原因（已遮蔽，无密钥），用于提示
+};
+
+// 探活结果缓存，避免每次进页面都真打一次模型
+let probeCache: { at: number; result: LlmStatus } | null = null;
+const PROBE_TTL_MS = 60_000;
+
+/**
+ * LLM 真实状态：实际向 Qwen 发一个极小请求探活。
+ * 连得上 → enabled:true（显示模型名）；无 key / 鉴权失败 / 额度不足 / 网络异常
+ * → enabled:false（前端显示「演示模式」）。
+ */
 export const llmStatus = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ enabled: boolean; model: string; maskedKey: string }> => {
+  async (): Promise<LlmStatus> => {
     const key = readKey();
-    return {
-      enabled: !!key,
-      model: process.env.QWEN_MODEL ?? "qwen-plus",
-      maskedKey: maskSecret(key),
-    };
+    const model = process.env.QWEN_MODEL ?? "qwen-plus";
+    const maskedKey = maskSecret(key);
+
+    if (!key) return { enabled: false, model, maskedKey, reason: "未配置密钥" };
+    if (probeCache && Date.now() - probeCache.at < PROBE_TTL_MS) {
+      return probeCache.result;
+    }
+
+    let result: LlmStatus;
+    try {
+      // 极小探活请求：max_tokens 很小、不强制 JSON，尽量省 token
+      const probe = new QwenModelClient({ apiKey: key, maxTokens: 8, jsonMode: false });
+      await probe.complete({ system: "ping", messages: [{ role: "user", content: "ping" }] });
+      result = { enabled: true, model, maskedKey };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[llm] 健康探测失败 (key=${maskedKey}):`, msg);
+      result = { enabled: false, model, maskedKey, reason: msg.slice(0, 140) };
+    }
+    probeCache = { at: Date.now(), result };
+    return result;
   },
 );
 

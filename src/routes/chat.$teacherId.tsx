@@ -11,7 +11,7 @@ import {
 } from "@/agent/interview";
 import { MockTeacherConfigProvider, buildTeacherConfig } from "@/mock/interview";
 import { FallbackModelClient, ServerModelClient } from "@/llm/clients";
-import { llmStatus } from "@/llm/endpoints";
+import { llmStatus, type LlmStatus } from "@/llm/endpoints";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { PerspectiveSwitcher } from "@/components/layouts/PerspectiveSwitcher";
 import { LanguageSwitcher } from "@/i18n/LanguageSwitcher";
@@ -89,12 +89,14 @@ function ChatPage() {
     };
   }, []);
 
-  // LLM 状态（关键信息已遮蔽），仅用于头部标识
-  const [llm, setLlm] = useState<{ enabled: boolean; model: string; maskedKey: string } | null>(
-    null,
-  );
+  // LLM 真实状态（实测探活，关键信息已遮蔽），用于头部标识
+  const [llm, setLlm] = useState<LlmStatus | null>(null);
   useEffect(() => {
-    llmStatus().then(setLlm).catch(() => setLlm({ enabled: false, model: "", maskedKey: "" }));
+    llmStatus()
+      .then(setLlm)
+      .catch((e) =>
+        setLlm({ enabled: false, model: "", maskedKey: "", reason: String(e).slice(0, 140) }),
+      );
   }, []);
 
   const config = useMemo(() => buildTeacherConfig(t.id), [t.id]);
@@ -274,19 +276,33 @@ function ChatPage() {
               {t9n("progress.questions", { n: askedCount, m: maxQ })}
             </div>
           )}
-          {llm && (
-            <div
-              className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] md:flex ${
-                llm.enabled
+          <div
+            className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] md:flex ${
+              !llm
+                ? "border-border bg-surface/60 text-muted-foreground"
+                : llm.enabled
                   ? "border-success/40 bg-success/10 text-success"
                   : "border-border bg-surface/60 text-muted-foreground"
-              }`}
-              title={llm.enabled ? `${llm.model} · ${llm.maskedKey}` : "未配置密钥，使用打桩演示"}
-            >
+            }`}
+            title={
+              !llm
+                ? t9n("llm.checking")
+                : llm.enabled
+                  ? `Qwen · ${llm.model} · ${llm.maskedKey}`
+                  : `${t9n("llm.mocking")} · ${llm.reason ?? ""}`
+            }
+          >
+            {!llm ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
               <Sparkles className="h-3 w-3" />
-              {llm.enabled ? `Qwen · ${llm.model}` : "演示模式"}
-            </div>
-          )}
+            )}
+            {!llm
+              ? t9n("llm.checking")
+              : llm.enabled
+                ? `Qwen · ${llm.model}`
+                : t9n("llm.mocking")}
+          </div>
           <LanguageSwitcher />
           <PerspectiveSwitcher />
         </div>
