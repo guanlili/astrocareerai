@@ -108,6 +108,50 @@ export type ComplianceItem = {
   status: ComplianceStatus;
 };
 
+// ──────────────────────────────────────────────────────────────────────────
+// 后台运营任务（统一聚合） + 审计日志
+// ──────────────────────────────────────────────────────────────────────────
+
+/** 运营任务来源模块（与各业务状态机一一对应）。 */
+export type TaskType = "review" | "training" | "compliance" | "refund";
+export type TaskPriority = "P0" | "P1" | "P2";
+
+/**
+ * 统一优先级运营任务（纯派生，不入库）：把分散在 reviews / trainingJobs /
+ * compliance / orders 里的待处理项归一为同一张可筛选、可执行的任务列表，
+ * 供「运营待办」中心与首页「今日待办」复用。
+ */
+export type OpsTask = {
+  id: string; // 形如 task:<type>:<entityId>，保证全局唯一
+  type: TaskType;
+  priority: TaskPriority;
+  title: string;
+  subtitle: string;
+  targetId: string; // 原始实体 id（review / training / compliance / order）
+  meta: Record<string, string>; // 展开上下文（已格式化为可读字符串）
+};
+
+/** 审计动作（后台运营动作归类，便于「最近处理记录」展示）。 */
+export type AuditAction =
+  | "review.approve"
+  | "review.reject"
+  | "training.retry"
+  | "training.cancel"
+  | "compliance.allow"
+  | "compliance.takedown"
+  | "refund.request"
+  | "refund.approve";
+
+/** 审计日志条目（仅客户端交互后产生，SSR/首帧为空 → 无水合不一致）。 */
+export type AuditEntry = {
+  id: string;
+  action: AuditAction;
+  targetType: TaskType;
+  targetId: string;
+  summary: string; // 人类可读摘要
+  at: number; // epoch ms（仅客户端、非渲染期产生）
+};
+
 export type AppState = {
   favorites: Favorite[];
   bookings: Booking[]; // 学生 1v1 预约（booking/me 页用）
@@ -119,6 +163,7 @@ export type AppState = {
   reviews: ReviewItem[];
   trainingJobs: TrainingJob[];
   compliance: ComplianceItem[];
+  auditLog: AuditEntry[]; // 后台运营动作审计（SSR 为空，客户端交互后追加）
   version: number;
 };
 
@@ -192,6 +237,7 @@ export function seed(): AppState {
     compliance: clone(adminComplianceItems).map(
       (c): ComplianceItem => ({ ...c, risk: c.risk as ComplianceItem["risk"], status: "pending" }),
     ),
+    auditLog: [],
     version: 1,
   };
 }
@@ -225,6 +271,7 @@ function readFromStorage(): AppState {
       reviews: Array.isArray(parsed.reviews) ? parsed.reviews : base.reviews,
       trainingJobs: Array.isArray(parsed.trainingJobs) ? parsed.trainingJobs : base.trainingJobs,
       compliance: Array.isArray(parsed.compliance) ? parsed.compliance : base.compliance,
+      auditLog: Array.isArray(parsed.auditLog) ? parsed.auditLog : base.auditLog,
     };
   } catch {
     return seed();
@@ -276,6 +323,33 @@ function commit(next: AppState): AppState {
 
 function update(recipe: (s: AppState) => AppState): AppState {
   return commit(recipe(snapshot));
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 审计日志（轻量记录 helper）—— 仅在客户端交互后调用，故 Date.now() 安全
+// ──────────────────────────────────────────────────────────────────────────
+
+const AUDIT_CAP = 200;
+
+/** 在 recipe 内追加一条审计日志（与业务变更同一 commit，保证原子）。 */
+function appendAudit(s: AppState, entry: Omit<AuditEntry, "id" | "at">): AuditEntry[] {
+  return [
+    {
+      ...entry,
+      id: `AUD-${Date.now().toString(36).toUpperCase()}`,
+      at: Date.now(),
+    },
+    ...s.auditLog,
+  ].slice(0, AUDIT_CAP);
+}
+
+/**
+ * 记录一条后台运营审计（公开 helper）。
+ * 业务动作（审核 / 训练 / 合规 / 退款）内部已自动调用，多数情况下无需手动调用；
+ * 仅在需要补充自定义事件时使用。
+ */
+export function logAudit(entry: Omit<AuditEntry, "id" | "at">): void {
+  update((s) => ({ ...s, auditLog: appendAudit(s, entry) }));
 }
 
 /** 客户端挂载后：把 localStorage 真实数据灌入快照并 emit（SSR 安全，幂等）。 */
@@ -458,12 +532,40 @@ export function setOrderStatus(orderId: string, status: OrderStatus): void {
 
 /** 发起退款：→ 退款中。 */
 export function requestRefund(orderId: string): void {
-  setOrderStatus(orderId, "退款中");
+  update((s) => {
+    const next = syncStatusById(orderId, "退款中")(s);
+    const order = s.orders.find((o) => o.id === orderId);
+    return {
+      ...next,
+      auditLog: appendAudit(s, {
+        action: "refund.request",
+        targetType: "refund",
+        targetId: orderId,
+        summary: order
+          ? `提交退款申请 ${orderId} · ${order.student} → ${order.teacher} ¥${order.amount}`
+          : `提交退款申请 ${orderId}`,
+      }),
+    };
+  });
 }
 
 /** 审批退款：→ 已退款。 */
 export function approveRefund(orderId: string): void {
-  setOrderStatus(orderId, "已退款");
+  update((s) => {
+    const next = syncStatusById(orderId, "已退款")(s);
+    const order = s.orders.find((o) => o.id === orderId);
+    return {
+      ...next,
+      auditLog: appendAudit(s, {
+        action: "refund.approve",
+        targetType: "refund",
+        targetId: orderId,
+        summary: order
+          ? `批准退款 ${orderId} · ¥${order.amount}，款项原路退回`
+          : `批准退款 ${orderId}`,
+      }),
+    };
+  });
 }
 
 /** 学生端「申请退款」入口（me 页）：与 requestRefund 等价。 */
@@ -507,6 +609,117 @@ export function teacherEarnings(state: AppState, teacherName: string) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// 运营待办（统一优先级任务，纯派生）
+// ──────────────────────────────────────────────────────────────────────────
+
+const PRIORITY_RANK: Record<TaskPriority, number> = { P0: 0, P1: 1, P2: 2 };
+
+/**
+ * 把分散在各模块的待处理项归一为统一优先级任务列表：
+ *   - reviews pending            → P1（入驻审核，阻塞老师上线）
+ *   - trainingJobs failed        → P0（训练失败，阻塞「上传即用」体验）
+ *   - trainingJobs queued        → P1（队列堆积）
+ *   - compliance pending 高/中/低 → P0 / P1 / P2（合规风险随等级递增）
+ *   - orders 退款中 / 退款        → P1（资金待处理）
+ * bookings 与 orders 同步，无需单独处理。
+ */
+export function opsTasks(state: AppState): OpsTask[] {
+  const tasks: OpsTask[] = [];
+
+  for (const r of state.reviews) {
+    if (r.status === "pending") {
+      tasks.push({
+        id: `task:review:${r.id}`,
+        type: "review",
+        priority: "P1",
+        title: `${r.name} · 入驻审核`,
+        subtitle: r.title,
+        targetId: r.id,
+        meta: { 提交时间: r.submittedAt, 素材数: String(r.materials), 编号: r.id },
+      });
+    }
+  }
+
+  for (const j of state.trainingJobs) {
+    if (j.status === "failed") {
+      tasks.push({
+        id: `task:training:${j.id}`,
+        type: "training",
+        priority: "P0",
+        title: `${j.teacher} · 训练失败待重试`,
+        subtitle: j.failReason ?? "训练失败，请重试",
+        targetId: j.id,
+        meta: { 任务: j.id, 进度: `${j.progress}%`, 耗时: j.duration },
+      });
+    } else if (j.status === "queued") {
+      tasks.push({
+        id: `task:training:${j.id}`,
+        type: "training",
+        priority: "P1",
+        title: `${j.teacher} · 训练排队中`,
+        subtitle: "等待调度，可取消或等待自动开始",
+        targetId: j.id,
+        meta: { 任务: j.id },
+      });
+    }
+  }
+
+  for (const c of state.compliance) {
+    if (c.status === "pending") {
+      const priority: TaskPriority = c.risk === "高" ? "P0" : c.risk === "中" ? "P1" : "P2";
+      tasks.push({
+        id: `task:compliance:${c.id}`,
+        type: "compliance",
+        priority,
+        title: `${c.teacher} · ${c.type} 合规审核`,
+        subtitle: c.reason,
+        targetId: c.id,
+        meta: { 风险: `${c.risk}风险`, 类型: c.type, 时间: c.time, 编号: c.id },
+      });
+    }
+  }
+
+  for (const o of state.orders) {
+    if (o.status === "退款中" || o.status === "退款") {
+      tasks.push({
+        id: `task:refund:${o.id}`,
+        type: "refund",
+        priority: "P1",
+        title: `${o.student} → ${o.teacher} · 退款待处理`,
+        subtitle: `${o.type} · ¥${o.amount.toLocaleString()}`,
+        targetId: o.id,
+        meta: { 订单: o.id, 金额: `¥${o.amount.toLocaleString()}`, 日期: o.date, 类型: o.type },
+      });
+    }
+  }
+
+  // 按优先级排序（P0 → P2），同级保持来源稳定顺序
+  return tasks.sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]);
+}
+
+/** 运营待办按优先级聚合计数（首页「今日待办」/ 任务中心头部复用）。 */
+export function opsTaskCounts(state: AppState): {
+  total: number;
+  P0: number;
+  P1: number;
+  P2: number;
+  byType: Record<TaskType, number>;
+} {
+  const tasks = opsTasks(state);
+  const byType: Record<TaskType, number> = { review: 0, training: 0, compliance: 0, refund: 0 };
+  let P0 = 0;
+  let P1 = 0;
+  let P2 = 0;
+  for (const t of tasks) {
+    byType[t.type] += 1;
+    if (t.priority === "P0") P0 += 1;
+    else if (t.priority === "P1") P1 += 1;
+    else P2 += 1;
+  }
+  return { total: tasks.length, P0, P1, P2, byType };
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // 管理端动作
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -535,35 +748,62 @@ export function setReviewStatus(id: string, status: ReviewStatus): void {
         ...next.trainingJobs,
       ];
     }
+    next.auditLog = appendAudit(s, {
+      action: status === "approved" ? "review.approve" : "review.reject",
+      targetType: "review",
+      targetId: id,
+      summary:
+        status === "approved"
+          ? `通过「${review?.name ?? id}」入驻申请${review ? "，已排入训练队列" : ""}`
+          : `拒绝「${review?.name ?? id}」入驻申请`,
+    });
     return next;
   });
 }
 
 /** 重试失败训练任务：failed → running，推进进度。 */
 export function retryTraining(id: string): void {
-  update((s) => ({
-    ...s,
-    trainingJobs: s.trainingJobs.map((j) =>
-      j.id === id
-        ? {
-            ...j,
-            status: "running",
-            progress: 50,
-            startedAt: "刚刚",
-            duration: "进行中",
-            failReason: undefined,
-          }
-        : j,
-    ),
-  }));
+  update((s) => {
+    const job = s.trainingJobs.find((j) => j.id === id);
+    return {
+      ...s,
+      trainingJobs: s.trainingJobs.map((j) =>
+        j.id === id
+          ? {
+              ...j,
+              status: "running",
+              progress: 50,
+              startedAt: "刚刚",
+              duration: "进行中",
+              failReason: undefined,
+            }
+          : j,
+      ),
+      auditLog: appendAudit(s, {
+        action: "training.retry",
+        targetType: "training",
+        targetId: id,
+        summary: `重试「${job?.teacher ?? id}」的训练任务，已重置为进行中（50%）`,
+      }),
+    };
+  });
 }
 
 /** 取消排队中的训练任务。 */
 export function cancelTraining(id: string): void {
-  update((s) => ({
-    ...s,
-    trainingJobs: s.trainingJobs.filter((j) => j.id !== id),
-  }));
+  update((s) => {
+    const job = s.trainingJobs.find((j) => j.id === id);
+    return {
+      ...s,
+      trainingJobs: s.trainingJobs.filter((j) => j.id !== id),
+      auditLog: appendAudit(s, {
+        action: "training.cancel",
+        targetType: "training",
+        targetId: id,
+        summary: `取消「${job?.teacher ?? id}」的排队训练任务`,
+      }),
+    };
+  });
 }
 
 export function viewTraining(id: string): TrainingJob | undefined {
@@ -572,10 +812,22 @@ export function viewTraining(id: string): TrainingJob | undefined {
 
 /** 合规处置：放行 / 下线。 */
 export function setComplianceStatus(id: string, status: ComplianceStatus): void {
-  update((s) => ({
-    ...s,
-    compliance: s.compliance.map((c) => (c.id === id ? { ...c, status } : c)),
-  }));
+  update((s) => {
+    const item = s.compliance.find((c) => c.id === id);
+    return {
+      ...s,
+      compliance: s.compliance.map((c) => (c.id === id ? { ...c, status } : c)),
+      auditLog: appendAudit(s, {
+        action: status === "allowed" ? "compliance.allow" : "compliance.takedown",
+        targetType: "compliance",
+        targetId: id,
+        summary:
+          status === "allowed"
+            ? `放行「${item?.type ?? id}」相关内容（${item?.teacher ?? ""}）`
+            : `下线「${item?.type ?? id}」相关内容（${item?.teacher ?? ""}）`,
+      }),
+    };
+  });
 }
 
 // ──────────────────────────────────────────────────────────────────────────

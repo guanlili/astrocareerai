@@ -39,6 +39,7 @@ import {
   Settings2,
   Loader2,
   RotateCcw,
+  BrainCircuit,
 } from "lucide-react";
 
 export const Route = createFileRoute("/chat/$teacherId")({
@@ -151,6 +152,13 @@ function ChatPage() {
   const messages: ChatMsg[] = session?.messages ?? [];
   const askedCount = session?.askedQuestionIds.length ?? 0;
   const dimName = (id: string) => rubric.find((r) => r.id === id)?.name ?? id;
+  const followUpReason = (dimension: string, score?: number) => {
+    const name = dimName(dimension);
+    if (score !== undefined && score < 75) {
+      return `上一轮的「${name}」证据不足，AI 正在追问关键细节来判断真实能力。`;
+    }
+    return `AI 正在验证「${name}」，确认你的结论是否有完整的业务与决策依据。`;
+  };
 
   function rememberPointer(id: string) {
     try {
@@ -266,9 +274,9 @@ function ChatPage() {
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[260px_1fr_300px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_1fr_300px]">
         {/* 左侧：老师卡 + 模式 + 场景 */}
-        <aside className="hidden flex-col gap-4 border-r border-border bg-sidebar/40 p-4 md:flex">
+        <aside className="hidden flex-col gap-4 border-r border-border bg-sidebar/40 p-4 lg:flex">
           <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center gap-3">
               <img src={t.avatar} alt="" className="h-12 w-12 rounded-lg ring-2 ring-primary/40" />
@@ -402,7 +410,7 @@ function ChatPage() {
                         className={`whitespace-pre-wrap rounded-2xl p-4 text-sm leading-relaxed ${
                           ai
                             ? "rounded-tl-sm bg-surface-2 text-foreground"
-                            : "rounded-tr-sm bg-primary/20 text-foreground"
+                            : "rounded-tr-sm bg-primary text-primary-foreground"
                         }`}
                       >
                         {m.content}
@@ -426,8 +434,16 @@ function ChatPage() {
                         </div>
                       )}
                       {ai && m.meta && !m.feedback && (
-                        <div className="font-mono text-[10px] uppercase tracking-wider text-gold">
-                          {m.meta}
+                        <div className="rounded-xl border border-primary/15 bg-primary/5 p-2.5 text-xs">
+                          <div className="flex items-center gap-1.5 font-medium text-primary">
+                            <BrainCircuit className="h-3.5 w-3.5" /> 为什么追问
+                          </div>
+                          <p className="mt-1 leading-relaxed text-muted-foreground">
+                            {followUpReason(m.meta)}
+                          </p>
+                          <div className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-primary/80">
+                            验证维度 · {dimName(m.meta)}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -439,7 +455,7 @@ function ChatPage() {
               {pendingUser && (
                 <div className="flex flex-row-reverse gap-3">
                   <div className="max-w-[78%]">
-                    <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-primary/20 p-4 text-sm">
+                    <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-primary p-4 text-sm text-primary-foreground">
                       {pendingUser}
                     </div>
                   </div>

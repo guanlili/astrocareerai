@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { ArrowRight, ListTodo } from "lucide-react";
 import { AdminShell } from "@/components/layouts/AdminShell";
 import { KpiCard, SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { adminDauTrend, adminPaymentBreakdown, dashboardKpis } from "@/mock/platform";
@@ -15,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useMockState, resetMockStore } from "@/mock/store";
+import { useMockState, resetMockStore, opsTasks, opsTaskCounts, type TaskType } from "@/mock/store";
 import {
   Area,
   AreaChart,
@@ -37,6 +38,14 @@ export const Route = createFileRoute("/admin/")({
 
 const PALETTE = ["var(--primary-glow)", "var(--gold)", "var(--chart-2)", "var(--muted-foreground)"];
 
+const TASK_TYPE_LABEL: Record<TaskType, string> = {
+  review: "入驻审核",
+  training: "训练",
+  compliance: "合规",
+  refund: "退款",
+};
+const PRIORITY_TONE = { P0: "danger", P1: "warning", P2: "info" } as const;
+
 function AdminHome() {
   // 反应式读取统一 Mock store：GMV / 训练成功率由真实数据派生
   const st = useMockState();
@@ -49,6 +58,12 @@ function AdminHome() {
     const successRate = settled.length > 0 ? (success / settled.length) * 100 : 0;
     return { gmv, successRate };
   }, [st.orders, st.trainingJobs]);
+
+  // 今日待办：由统一 opsTasks 派生（review / training / compliance / refund）
+  const todo = useMemo(() => {
+    const tasks = opsTasks(st);
+    return { tasks, counts: opsTaskCounts(st) };
+  }, [st]);
 
   const handleReset = () => {
     resetMockStore();
@@ -82,6 +97,63 @@ function AdminHome() {
         {kpis.map((k) => (
           <KpiCard key={k.label} {...k} />
         ))}
+      </div>
+
+      <div className="mt-6 glass-panel rounded-xl p-6">
+        <SectionTitle
+          title="今日待办"
+          desc="统一优先级运营任务 · 入驻审核 / 训练 / 合规 / 退款"
+          action={
+            <Link
+              to="/admin/tasks"
+              className="inline-flex items-center gap-1.5 rounded-md gradient-primary px-3 py-1.5 text-xs text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <ListTodo className="h-3.5 w-3.5" />
+              进入待办中心
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          }
+        />
+        <div className="flex flex-wrap gap-2">
+          <StatusBadge tone="danger">P0 · {todo.counts.P0}</StatusBadge>
+          <StatusBadge tone="warning">P1 · {todo.counts.P1}</StatusBadge>
+          <StatusBadge tone="info">P2 · {todo.counts.P2}</StatusBadge>
+          <StatusBadge tone="neutral">合计 · {todo.counts.total}</StatusBadge>
+        </div>
+
+        {todo.tasks.length === 0 ? (
+          <div className="mt-4 rounded-md border border-dashed border-border/60 px-4 py-8 text-center text-sm text-muted-foreground">
+            暂无待处理任务，一切就绪 🎉
+          </div>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {todo.tasks.slice(0, 5).map((t) => (
+              <li
+                key={t.id}
+                className="flex items-center gap-3 rounded-md border border-border/60 bg-surface/40 px-3 py-2.5 text-sm"
+              >
+                <StatusBadge tone={PRIORITY_TONE[t.priority]}>{t.priority}</StatusBadge>
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  {TASK_TYPE_LABEL[t.type]}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{t.title}</span>
+                <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+                  {t.subtitle}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-4 flex items-center justify-end">
+          <Link
+            to="/admin/tasks"
+            className="inline-flex items-center gap-1 text-xs text-primary-glow hover:underline"
+          >
+            查看全部 {todo.counts.total} 项待办
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">

@@ -21,7 +21,15 @@ import { SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { getTeacher } from "@/mock/teachers";
 import { useAppState, ensureSession, type SessionRecord } from "@/mock/appStore";
 import type { InterviewReport } from "@/agent/interview";
-import { Check, AlertTriangle, Lightbulb, Download, Share2, MessageSquare } from "lucide-react";
+import {
+  Check,
+  AlertTriangle,
+  Lightbulb,
+  Download,
+  Share2,
+  MessageSquare,
+  Repeat2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/report/$sessionId")({
   head: () => ({ meta: [{ title: "评估报告 · 面镜 MirrorHire" }] }),
@@ -240,6 +248,46 @@ function ReportPage() {
           tone="gold"
           items={report.suggestions}
         />
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-10">
+        <div className="glass-panel rounded-2xl p-6 sm:p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Repeat2 className="h-4 w-4 text-primary" /> 我的错题本
+              </div>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight">
+                把薄弱项变成下一次更好的回答
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                已从本场报告沉淀 {report.weaknesses.length} 个可专项重练的问题。
+              </p>
+            </div>
+            {teacher && (
+              <Link
+                to="/chat/$teacherId"
+                params={{ teacherId: teacher.id }}
+                className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                开始 10 分钟专项重练
+              </Link>
+            )}
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {report.weaknesses.slice(0, 4).map((item, index) => (
+              <div key={item} className="rounded-xl border border-border bg-card/70 p-4">
+                <div className="text-xs font-medium text-primary">
+                  专项 {String(index + 1).padStart(2, "0")}
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-foreground">{item}</p>
+                <div className="mt-3 text-xs text-muted-foreground">
+                  推荐：围绕该点完成 3 轮追问练习
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {report.handoffRecommended && teacher && (

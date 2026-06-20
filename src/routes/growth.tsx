@@ -6,6 +6,7 @@ import { growthTrend, reportData } from "@/mock/sessions";
 import { dashboardKpis } from "@/mock/platform";
 import { useAppState } from "@/mock/appStore";
 import type { InterviewReport } from "@/agent/interview/types";
+import { CalendarClock, CheckCircle2, Target } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -166,6 +167,56 @@ function GrowthPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-6 overflow-hidden rounded-2xl bg-foreground p-6 text-background shadow-elevate sm:p-7">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-medium text-background/65">
+                <Target className="h-4 w-4" /> OFFER 作战室
+              </div>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                冲刺字节跳动产品经理 Offer
+              </h2>
+              <p className="mt-2 text-sm text-background/65">
+                距离目标面试还有 18 天。今天先完成一次“指标拆解”专项训练。
+              </p>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-2 text-sm">
+              <CalendarClock className="h-4 w-4 text-primary-glow" /> 截止日期 · 07 月 08 日
+            </div>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            {[
+              { label: "岗位画像", note: "已完成", done: true },
+              { label: "专项补弱", note: "进行中 · 指标拆解", done: false },
+              { label: "真人终面", note: "建议在 7 天内预约", done: false },
+            ].map((step, index) => (
+              <div key={step.label} className="rounded-xl border border-white/10 bg-white/5 p-3.5">
+                <div className="flex items-center justify-between text-xs text-background/60">
+                  <span>0{index + 1}</span>
+                  {step.done && <CheckCircle2 className="h-4 w-4 text-success" />}
+                </div>
+                <div className="mt-2 font-medium">{step.label}</div>
+                <div className="mt-1 text-xs text-background/60">{step.note}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              to="/chat/$teacherId"
+              params={{ teacherId: "t-001" }}
+              className="rounded-full bg-background px-4 py-2 text-sm font-medium text-foreground transition-transform hover:-translate-y-0.5"
+            >
+              开始 10 分钟专项训练
+            </Link>
+            <Link
+              to="/teachers/$id"
+              params={{ id: "t-001" }}
+              className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-white/10"
+            >
+              预约真人终面
+            </Link>
+          </div>
+        </div>
         {usingReal ? (
           <div className="grid gap-4 md:grid-cols-4">
             <KpiCard
