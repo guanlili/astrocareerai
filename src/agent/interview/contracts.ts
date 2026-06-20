@@ -23,10 +23,15 @@ export interface InterviewClient {
   /** 开场：创建会话，进入 INTRO 并抛出第 1 题。 */
   start(setup: InterviewSetup, teacherId: string): Promise<InterviewSession>;
 
-  /** 单回合：处理候选人输入，给即时反馈 + 下一题（或收尾）。 */
+  /**
+   * 单回合：处理候选人输入，给即时反馈 + 下一题（或收尾）。
+   * opts.clientTurn 用于幂等（§7.8.4）：客户端重发携带上次 turn，
+   * 服务端若收到 clientTurn ≤ 当前 turn 则返回已存结果，不重复调模型。
+   */
   reply(
     sessionId: string,
     userText: string,
+    opts?: { clientTurn?: number },
   ): Promise<{
     session: InterviewSession;
     message: ChatMsg; // AI 本轮输出（含 feedback / questionId）
