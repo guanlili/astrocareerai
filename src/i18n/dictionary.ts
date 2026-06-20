@@ -15,6 +15,8 @@ const zh = {
   "header.aiAvatar": "AI 分身",
   "common.cancel": "取消",
   "lang.switch": "语言",
+  "llm.mocking": "演示模式（Mock）",
+  "llm.checking": "检测中…",
 
   // 辅导模式
   "mode.free": "自由问答",
@@ -89,6 +91,8 @@ const en: Record<TKey, string> = {
   "header.aiAvatar": "AI Avatar",
   "common.cancel": "Cancel",
   "lang.switch": "Language",
+  "llm.mocking": "Mocking",
+  "llm.checking": "Checking…",
 
   "mode.free": "Open Q&A",
   "mode.mock": "Mock Interview",

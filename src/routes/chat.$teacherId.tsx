@@ -4,13 +4,14 @@ import { getTeacher } from "@/mock/teachers";
 import type { ChatMsg } from "@/mock/sessions";
 import {
   MockInterviewAgent,
-  StubModelClient,
   LocalSessionStore,
   type InterviewSession,
   type InterviewSetup,
   type LanguageMode,
 } from "@/agent/interview";
 import { MockTeacherConfigProvider, buildTeacherConfig } from "@/mock/interview";
+import { FallbackModelClient, ServerModelClient } from "@/llm/clients";
+import { llmStatus, type LlmStatus } from "@/llm/endpoints";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { PerspectiveSwitcher } from "@/components/layouts/PerspectiveSwitcher";
 import { LanguageSwitcher } from "@/i18n/LanguageSwitcher";
@@ -76,17 +77,27 @@ function ChatPage() {
   const t9n = useT();
   const navigate = useNavigate();
 
-  // 面试 Agent：本期注入 Stub 模型 + 本地存储；切换真实模型只需替换 model（§7.3）
+  // 面试 Agent：真实模型经服务端代理 Qwen（密钥在服务端），失败回退打桩；本地存储。
   const { agent, store } = useMemo(() => {
     const localStore = new LocalSessionStore();
     return {
       store: localStore,
       agent: new MockInterviewAgent({
         configProvider: new MockTeacherConfigProvider(),
-        model: new StubModelClient(),
+        model: new FallbackModelClient(new ServerModelClient()),
         store: localStore,
       }),
     };
+  }, []);
+
+  // LLM 真实状态（实测探活，关键信息已遮蔽），用于头部标识
+  const [llm, setLlm] = useState<LlmStatus | null>(null);
+  useEffect(() => {
+    llmStatus()
+      .then(setLlm)
+      .catch((e) =>
+        setLlm({ enabled: false, model: "", maskedKey: "", reason: String(e).slice(0, 140) }),
+      );
   }, []);
 
   const config = useMemo(() => buildTeacherConfig(t.id), [t.id]);
@@ -269,6 +280,33 @@ function ChatPage() {
               {t9n("progress.questions", { n: askedCount, m: maxQ })}
             </div>
           )}
+          <div
+            className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] md:flex ${
+              !llm
+                ? "border-border bg-surface/60 text-muted-foreground"
+                : llm.enabled
+                  ? "border-success/40 bg-success/10 text-success"
+                  : "border-border bg-surface/60 text-muted-foreground"
+            }`}
+            title={
+              !llm
+                ? t9n("llm.checking")
+                : llm.enabled
+                  ? `Qwen · ${llm.model} · ${llm.maskedKey}`
+                  : `${t9n("llm.mocking")} · ${llm.reason ?? ""}`
+            }
+          >
+            {!llm ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3" />
+            )}
+            {!llm
+              ? t9n("llm.checking")
+              : llm.enabled
+                ? `Qwen · ${llm.model}`
+                : t9n("llm.mocking")}
+          </div>
           <LanguageSwitcher />
           <PerspectiveSwitcher />
         </div>
