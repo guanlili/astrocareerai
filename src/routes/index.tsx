@@ -8,7 +8,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "面镜 MirrorHire · 老师 IP × AI 数字分身面试辅导平台" },
-      { name: "description", content: "找真正做过面试官的老师，AI 分身 7×24 陪练，关键时刻无缝转 1v1。" },
+      {
+        name: "description",
+        content: "找真正做过面试官的老师，AI 分身 7×24 陪练，关键时刻无缝转 1v1。",
+      },
       { property: "og:title", content: "面镜 MirrorHire" },
       { property: "og:description", content: "老师 IP × AI 数字分身，让每位求职者拥有专属导师。" },
     ],
@@ -55,13 +58,13 @@ function Home() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 to="/teachers"
-                className="inline-flex h-12 items-center gap-2 rounded-md gradient-primary px-6 font-medium text-primary-foreground shadow-elevate transition-transform hover:translate-y-[-1px]"
+                className="inline-flex h-12 items-center gap-2 rounded-full gradient-primary px-7 font-medium text-primary-foreground shadow-elevate transition-transform hover:translate-y-[-1px]"
               >
                 立即开始模拟面试 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/teachers"
-                className="inline-flex h-12 items-center gap-2 rounded-md border border-border bg-surface/60 px-6 text-sm text-foreground hover:bg-surface"
+                className="inline-flex h-12 items-center gap-2 rounded-full border border-border bg-card px-7 text-sm text-foreground transition-colors hover:bg-accent"
               >
                 浏览老师库
               </Link>
@@ -110,7 +113,7 @@ function Home() {
                     考察：指标拆解 · 业务理解
                   </div>
                 </div>
-                <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-primary/20 p-3 text-sm text-foreground">
+                <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-primary p-3 text-sm text-primary-foreground">
                   我们拆成三层：激励触达率、转化率、长期留存。DAU 易受大盘扰动……
                 </div>
                 <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-surface-2 p-3 text-sm leading-relaxed">
@@ -149,8 +152,16 @@ function Home() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { icon: Bot, t: "老师专属知识库", d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。" },
-            { icon: MessageSquare, t: "动态追问 ≠ 题库", d: "AI 基于上一轮回答生成下一题，告别固定脚本。" },
+            {
+              icon: Bot,
+              t: "老师专属知识库",
+              d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。",
+            },
+            {
+              icon: MessageSquare,
+              t: "动态追问 ≠ 题库",
+              d: "AI 基于上一轮回答生成下一题，告别固定脚本。",
+            },
             { icon: Target, t: "六维可追溯评估", d: "雷达图分数可下钻到对话片段，不是黑盒打分。" },
             { icon: Users, t: "AI + 真人闭环", d: "AI 处理 80% 重复问题，触发条件自动转人工。" },
           ].map((f) => (
@@ -177,10 +188,7 @@ function Home() {
               来自一线的面试官，已数字化
             </h2>
           </div>
-          <Link
-            to="/teachers"
-            className="text-sm text-primary-glow hover:underline"
-          >
+          <Link to="/teachers" className="text-sm text-primary-glow hover:underline">
             查看全部 186 位老师 →
           </Link>
         </div>
@@ -194,7 +202,11 @@ function Home() {
               className="group glass-panel relative overflow-hidden rounded-xl p-5 transition-all hover:ring-1 hover:ring-primary/40"
             >
               <div className="flex items-center gap-3">
-                <img src={t.avatar} alt="" className="h-12 w-12 rounded-full ring-2 ring-primary/30" />
+                <img
+                  src={t.avatar}
+                  alt=""
+                  className="h-12 w-12 rounded-full ring-2 ring-primary/30"
+                />
                 <div className="min-w-0">
                   <div className="truncate font-medium">{t.name}</div>
                   <div className="truncate font-mono text-[11px] text-muted-foreground">

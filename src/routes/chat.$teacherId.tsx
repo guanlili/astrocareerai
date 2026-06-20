@@ -40,6 +40,7 @@ import {
   Settings2,
   Loader2,
   RotateCcw,
+  BrainCircuit,
 } from "lucide-react";
 
 export const Route = createFileRoute("/chat/$teacherId")({
@@ -72,7 +73,7 @@ const langFromMode = (m?: LanguageMode): LangChoice =>
 type Difficulty = "warmup" | "standard" | "stress";
 
 function ChatPage() {
-  const { teacher: t } = Route.useLoaderData();
+  const t = getTeacher(Route.useParams().teacherId)!; // 同上，参数名为 teacherId
   const t9n = useT();
   const navigate = useNavigate();
 
@@ -123,9 +124,7 @@ function ChatPage() {
   const [roleTitle, setRoleTitle] = useState("");
   const [customFocus, setCustomFocus] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("standard");
-  const [langChoice, setLangChoice] = useState<LangChoice>(
-    langFromMode(config.style.language),
-  );
+  const [langChoice, setLangChoice] = useState<LangChoice>(langFromMode(config.style.language));
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -164,6 +163,13 @@ function ChatPage() {
   const messages: ChatMsg[] = session?.messages ?? [];
   const askedCount = session?.askedQuestionIds.length ?? 0;
   const dimName = (id: string) => rubric.find((r) => r.id === id)?.name ?? id;
+  const followUpReason = (dimension: string, score?: number) => {
+    const name = dimName(dimension);
+    if (score !== undefined && score < 75) {
+      return `上一轮的「${name}」证据不足，AI 正在追问关键细节来判断真实能力。`;
+    }
+    return `AI 正在验证「${name}」，确认你的结论是否有完整的业务与决策依据。`;
+  };
 
   function rememberPointer(id: string) {
     try {
@@ -251,9 +257,7 @@ function ChatPage() {
       .map((m) => m.feedback)
       .filter((f) => f && f.dimension === r.id)
       .map((f) => f!.score);
-    const v = scores.length
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : null;
+    const v = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
     return { name: r.name, v };
   });
 
@@ -308,9 +312,9 @@ function ChatPage() {
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[260px_1fr_300px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_1fr_300px]">
         {/* 左侧：老师卡 + 模式 + 场景 */}
-        <aside className="hidden flex-col gap-4 border-r border-border bg-sidebar/40 p-4 md:flex">
+        <aside className="hidden flex-col gap-4 border-r border-border bg-sidebar/40 p-4 lg:flex">
           <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center gap-3">
               <img src={t.avatar} alt="" className="h-12 w-12 rounded-lg ring-2 ring-primary/40" />
@@ -369,12 +373,18 @@ function ChatPage() {
             </div>
             <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
               {session?.setup.roleTitle && (
-                <div>· {t9n("scenario.role")}：{session.setup.roleTitle}</div>
+                <div>
+                  · {t9n("scenario.role")}：{session.setup.roleTitle}
+                </div>
               )}
               {session?.setup.customFocus && (
-                <div>· {t9n("scenario.focus")}：{session.setup.customFocus}</div>
+                <div>
+                  · {t9n("scenario.focus")}：{session.setup.customFocus}
+                </div>
               )}
-              {phase === "interview" && <div>· {t9n("progress.questions", { n: askedCount, m: maxQ })}</div>}
+              {phase === "interview" && (
+                <div>· {t9n("progress.questions", { n: askedCount, m: maxQ })}</div>
+              )}
             </div>
           </div>
 
@@ -438,7 +448,7 @@ function ChatPage() {
                         className={`whitespace-pre-wrap rounded-2xl p-4 text-sm leading-relaxed ${
                           ai
                             ? "rounded-tl-sm bg-surface-2 text-foreground"
-                            : "rounded-tr-sm bg-primary/20 text-foreground"
+                            : "rounded-tr-sm bg-primary text-primary-foreground"
                         }`}
                       >
                         {m.content}
@@ -455,13 +465,23 @@ function ChatPage() {
                             </span>
                           </div>
                           {m.feedback.oneLineComment && (
-                            <p className="mt-1 text-muted-foreground">{m.feedback.oneLineComment}</p>
+                            <p className="mt-1 text-muted-foreground">
+                              {m.feedback.oneLineComment}
+                            </p>
                           )}
                         </div>
                       )}
                       {ai && m.meta && !m.feedback && (
-                        <div className="font-mono text-[10px] uppercase tracking-wider text-gold">
-                          {m.meta}
+                        <div className="rounded-xl border border-primary/15 bg-primary/5 p-2.5 text-xs">
+                          <div className="flex items-center gap-1.5 font-medium text-primary">
+                            <BrainCircuit className="h-3.5 w-3.5" /> 为什么追问
+                          </div>
+                          <p className="mt-1 leading-relaxed text-muted-foreground">
+                            {followUpReason(m.meta)}
+                          </p>
+                          <div className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-primary/80">
+                            验证维度 · {dimName(m.meta)}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -473,7 +493,7 @@ function ChatPage() {
               {pendingUser && (
                 <div className="flex flex-row-reverse gap-3">
                   <div className="max-w-[78%]">
-                    <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-primary/20 p-4 text-sm">
+                    <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-primary p-4 text-sm text-primary-foreground">
                       {pendingUser}
                     </div>
                   </div>
@@ -481,7 +501,11 @@ function ChatPage() {
               )}
               {busy && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <img src={t.avatar} alt="" className="h-8 w-8 rounded-full ring-2 ring-primary/30" />
+                  <img
+                    src={t.avatar}
+                    alt=""
+                    className="h-8 w-8 rounded-full ring-2 ring-primary/30"
+                  />
                   <Loader2 className="h-4 w-4 animate-spin" /> {t9n("chat.thinking")}
                 </div>
               )}
@@ -530,7 +554,9 @@ function ChatPage() {
                 </button>
               </div>
               <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                <span>{t.name} · {t9n("header.aiAvatar")}</span>
+                <span>
+                  {t.name} · {t9n("header.aiAvatar")}
+                </span>
                 {phase === "interview" && (
                   <button
                     onClick={endAndReport}

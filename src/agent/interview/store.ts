@@ -9,9 +9,7 @@ import type { SessionStore } from "./contracts";
 import type { InterviewEvent, InterviewSession } from "./types";
 
 const clone = <T>(v: T): T =>
-  typeof structuredClone === "function"
-    ? structuredClone(v)
-    : (JSON.parse(JSON.stringify(v)) as T);
+  typeof structuredClone === "function" ? structuredClone(v) : (JSON.parse(JSON.stringify(v)) as T);
 
 // ──────────────────────────────────────────────────────────────────────────
 // MemorySessionStore
@@ -42,11 +40,7 @@ export class MemorySessionStore implements SessionStore {
 
   async listResumable(userId: string): Promise<InterviewSession[]> {
     return [...this.sessions.values()]
-      .filter(
-        (s) =>
-          s.userId === userId &&
-          (s.status === "active" || s.status === "paused"),
-      )
+      .filter((s) => s.userId === userId && (s.status === "active" || s.status === "paused"))
       .map((s) => clone(s));
   }
 

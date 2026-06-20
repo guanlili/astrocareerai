@@ -28,8 +28,7 @@ export const mockInterviewScript: ChatMsg[] = [
   },
   {
     role: "user",
-    content:
-      "我们当时拆成三层：激励触达率、激励转化率、长期留存。直接看 DAU 容易被大盘波动干扰……",
+    content: "我们当时拆成三层：激励触达率、激励转化率、长期留存。直接看 DAU 容易被大盘波动干扰……",
   },
   {
     role: "ai",
@@ -39,8 +38,7 @@ export const mockInterviewScript: ChatMsg[] = [
   },
   {
     role: "user",
-    content:
-      "我们看的是 D30。剥离自然留存我们做了 A/B 实验，控制组保持原激励规则……",
+    content: "我们看的是 D30。剥离自然留存我们做了 A/B 实验，控制组保持原激励规则……",
   },
   {
     role: "ai",

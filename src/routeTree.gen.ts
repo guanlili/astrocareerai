@@ -16,6 +16,7 @@ import { Route as TeachersIndexRouteImport } from './routes/teachers.index'
 import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeachersIdRouteImport } from './routes/teachers.$id'
+import { Route as TeacherStudioRouteImport } from './routes/teacher.studio'
 import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
 import { Route as TeacherScheduleRouteImport } from './routes/teacher.schedule'
 import { Route as TeacherPublishRouteImport } from './routes/teacher.publish'
@@ -28,6 +29,7 @@ import { Route as ChatTeacherIdRouteImport } from './routes/chat.$teacherId'
 import { Route as BookingTeacherIdRouteImport } from './routes/booking.$teacherId'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
+import { Route as AdminTasksRouteImport } from './routes/admin.tasks'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
@@ -66,6 +68,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const TeachersIdRoute = TeachersIdRouteImport.update({
   id: '/teachers/$id',
   path: '/teachers/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherStudioRoute = TeacherStudioRouteImport.update({
+  id: '/teacher/studio',
+  path: '/teacher/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherStudentsRoute = TeacherStudentsRouteImport.update({
@@ -128,6 +135,11 @@ const AdminTrainingRoute = AdminTrainingRouteImport.update({
   path: '/admin/training',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTasksRoute = AdminTasksRouteImport.update({
+  id: '/admin/tasks',
+  path: '/admin/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminReviewRoute = AdminReviewRouteImport.update({
   id: '/admin/review',
   path: '/admin/review',
@@ -157,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AdminContentRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/review': typeof AdminReviewRoute
+  '/admin/tasks': typeof AdminTasksRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/users': typeof AdminUsersRoute
   '/booking/$teacherId': typeof BookingTeacherIdRoute
@@ -169,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
+  '/teacher/studio': typeof TeacherStudioRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/admin/': typeof AdminIndexRoute
   '/teacher/': typeof TeacherIndexRoute
@@ -182,6 +196,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AdminContentRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/review': typeof AdminReviewRoute
+  '/admin/tasks': typeof AdminTasksRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/users': typeof AdminUsersRoute
   '/booking/$teacherId': typeof BookingTeacherIdRoute
@@ -194,6 +209,7 @@ export interface FileRoutesByTo {
   '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
+  '/teacher/studio': typeof TeacherStudioRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/admin': typeof AdminIndexRoute
   '/teacher': typeof TeacherIndexRoute
@@ -208,6 +224,7 @@ export interface FileRoutesById {
   '/admin/content': typeof AdminContentRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/review': typeof AdminReviewRoute
+  '/admin/tasks': typeof AdminTasksRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/users': typeof AdminUsersRoute
   '/booking/$teacherId': typeof BookingTeacherIdRoute
@@ -220,6 +237,7 @@ export interface FileRoutesById {
   '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
+  '/teacher/studio': typeof TeacherStudioRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/admin/': typeof AdminIndexRoute
   '/teacher/': typeof TeacherIndexRoute
@@ -235,6 +253,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/payments'
     | '/admin/review'
+    | '/admin/tasks'
     | '/admin/training'
     | '/admin/users'
     | '/booking/$teacherId'
@@ -247,6 +266,7 @@ export interface FileRouteTypes {
     | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
+    | '/teacher/studio'
     | '/teachers/$id'
     | '/admin/'
     | '/teacher/'
@@ -260,6 +280,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/payments'
     | '/admin/review'
+    | '/admin/tasks'
     | '/admin/training'
     | '/admin/users'
     | '/booking/$teacherId'
@@ -272,6 +293,7 @@ export interface FileRouteTypes {
     | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
+    | '/teacher/studio'
     | '/teachers/$id'
     | '/admin'
     | '/teacher'
@@ -285,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/payments'
     | '/admin/review'
+    | '/admin/tasks'
     | '/admin/training'
     | '/admin/users'
     | '/booking/$teacherId'
@@ -297,6 +320,7 @@ export interface FileRouteTypes {
     | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
+    | '/teacher/studio'
     | '/teachers/$id'
     | '/admin/'
     | '/teacher/'
@@ -311,6 +335,7 @@ export interface RootRouteChildren {
   AdminContentRoute: typeof AdminContentRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminReviewRoute: typeof AdminReviewRoute
+  AdminTasksRoute: typeof AdminTasksRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminUsersRoute: typeof AdminUsersRoute
   BookingTeacherIdRoute: typeof BookingTeacherIdRoute
@@ -323,6 +348,7 @@ export interface RootRouteChildren {
   TeacherPublishRoute: typeof TeacherPublishRoute
   TeacherScheduleRoute: typeof TeacherScheduleRoute
   TeacherStudentsRoute: typeof TeacherStudentsRoute
+  TeacherStudioRoute: typeof TeacherStudioRoute
   TeachersIdRoute: typeof TeachersIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   TeacherIndexRoute: typeof TeacherIndexRoute
@@ -378,6 +404,13 @@ declare module '@tanstack/react-router' {
       path: '/teachers/$id'
       fullPath: '/teachers/$id'
       preLoaderRoute: typeof TeachersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/studio': {
+      id: '/teacher/studio'
+      path: '/teacher/studio'
+      fullPath: '/teacher/studio'
+      preLoaderRoute: typeof TeacherStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/students': {
@@ -464,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTrainingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tasks': {
+      id: '/admin/tasks'
+      path: '/admin/tasks'
+      fullPath: '/admin/tasks'
+      preLoaderRoute: typeof AdminTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/review': {
       id: '/admin/review'
       path: '/admin/review'
@@ -503,6 +543,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminContentRoute: AdminContentRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminReviewRoute: AdminReviewRoute,
+  AdminTasksRoute: AdminTasksRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminUsersRoute: AdminUsersRoute,
   BookingTeacherIdRoute: BookingTeacherIdRoute,
@@ -515,6 +556,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherPublishRoute: TeacherPublishRoute,
   TeacherScheduleRoute: TeacherScheduleRoute,
   TeacherStudentsRoute: TeacherStudentsRoute,
+  TeacherStudioRoute: TeacherStudioRoute,
   TeachersIdRoute: TeachersIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   TeacherIndexRoute: TeacherIndexRoute,

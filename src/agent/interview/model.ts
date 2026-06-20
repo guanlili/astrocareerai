@@ -282,8 +282,7 @@ export class ClaudeModelClient implements ModelClient {
       .filter((m) => m.content?.trim())
       .map((m) => ({
         role: m.role === "user" ? ("user" as const) : ("assistant" as const),
-        content:
-          m.role === "system" ? `[系统提示] ${m.content}` : m.content,
+        content: m.role === "system" ? `[系统提示] ${m.content}` : m.content,
       }));
     // Anthropic 要求 messages 以 user 开头且至少一条
     if (messages.length === 0 || messages[0].role !== "user") {
