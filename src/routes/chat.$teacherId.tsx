@@ -1,9 +1,33 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getTeacher } from "@/mock/teachers";
-import { mockInterviewScript, type ChatMsg } from "@/mock/sessions";
+import type { ChatMsg } from "@/mock/sessions";
+import {
+  MockInterviewAgent,
+  StubModelClient,
+  LocalSessionStore,
+  type InterviewSession,
+  type InterviewSetup,
+  type LanguageMode,
+} from "@/agent/interview";
+import { MockTeacherConfigProvider, buildTeacherConfig } from "@/mock/interview";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { PerspectiveSwitcher } from "@/components/layouts/PerspectiveSwitcher";
+import { LanguageSwitcher } from "@/i18n/LanguageSwitcher";
+import { useT } from "@/i18n/context";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   ArrowLeft,
   Mic,
@@ -12,7 +36,9 @@ import {
   Sparkles,
   FileText,
   Video,
-  AlertCircle,
+  Settings2,
+  Loader2,
+  RotateCcw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/chat/$teacherId")({
@@ -30,35 +56,197 @@ export const Route = createFileRoute("/chat/$teacherId")({
   component: ChatPage,
 });
 
-const modes = [
-  { id: "free", label: "自由问答", icon: Sparkles },
-  { id: "mock", label: "模拟面试", icon: Video },
-  { id: "resume", label: "简历优化", icon: FileText },
-];
+const modeIcons = { free: Sparkles, mock: Video, resume: FileText } as const;
+
+// UI 语言选项 → §5.5 LanguageMode 的映射（与产品界面语言无关）
+type LangChoice = "zh" | "en" | "mix";
+const LANG_MODE: Record<LangChoice, LanguageMode> = {
+  zh: { primary: "zh", mixing: "light" },
+  en: { primary: "en", mixing: "none" },
+  mix: { primary: "zh", mixing: "heavy" },
+};
+const langFromMode = (m?: LanguageMode): LangChoice =>
+  !m ? "zh" : m.primary === "en" ? "en" : m.mixing === "heavy" ? "mix" : "zh";
+
+type Difficulty = "warmup" | "standard" | "stress";
 
 function ChatPage() {
   const { teacher: t } = Route.useLoaderData();
-  const [mode, setMode] = useState("mock");
-  const [messages, setMessages] = useState<ChatMsg[]>(mockInterviewScript);
-  const [input, setInput] = useState("");
-  const [round] = useState({ used: 4, total: 5 });
-  const [showHandoff] = useState(true);
+  const t9n = useT();
+  const navigate = useNavigate();
 
-  const send = () => {
-    if (!input.trim()) return;
-    const next: ChatMsg[] = [
-      ...messages,
-      { role: "user", content: input },
-      {
-        role: "ai",
-        content:
-          "好。我注意到你的回答里提到了「leader」，能具体说一下你是怎么平衡数据结论与团队意见的吗？",
-        meta: "考察：沟通协作 · 决策表达",
-      },
-    ];
-    setMessages(next);
+  // 面试 Agent：本期注入 Stub 模型 + 本地存储；切换真实模型只需替换 model（§7.3）
+  const { agent, store } = useMemo(() => {
+    const localStore = new LocalSessionStore();
+    return {
+      store: localStore,
+      agent: new MockInterviewAgent({
+        configProvider: new MockTeacherConfigProvider(),
+        model: new StubModelClient(),
+        store: localStore,
+      }),
+    };
+  }, []);
+
+  const config = useMemo(() => buildTeacherConfig(t.id), [t.id]);
+  const rubric = config.knowledge.rubric;
+  const maxQ = config.guardrails.maxQuestions;
+  const lastKey = `mirrorhire:last:${t.id}`;
+
+  const [mode, setMode] = useState<keyof typeof modeIcons>("mock");
+  const [phase, setPhase] = useState<"config" | "interview">("config");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [session, setSession] = useState<InterviewSession | null>(null);
+  const [resumable, setResumable] = useState<InterviewSession | null>(null);
+
+  const [input, setInput] = useState("");
+  const [pendingUser, setPendingUser] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false); // 等待 AI 回合
+  const [starting, setStarting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  // 配置表单
+  const [resume, setResume] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [roleTitle, setRoleTitle] = useState("");
+  const [customFocus, setCustomFocus] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty>("standard");
+  const [langChoice, setLangChoice] = useState<LangChoice>(
+    langFromMode(config.style.language),
+  );
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // 续连检测（§7.8）：进入聊天室若存在未完成会话，提示继续 / 重开
+  useEffect(() => {
+    let active = true;
+    let sid: string | null = null;
+    try {
+      sid = localStorage.getItem(lastKey);
+    } catch {
+      /* ignore */
+    }
+    if (!sid) {
+      setDrawerOpen(true);
+      return;
+    }
+    store.load(sid).then((s) => {
+      if (!active) return;
+      if (s && s.status === "active" && (s.state === "INTRO" || s.state === "QA_LOOP")) {
+        setResumable(s);
+      } else {
+        setDrawerOpen(true);
+      }
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 新消息滚动到底
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [session?.messages.length, pendingUser, busy]);
+
+  const messages: ChatMsg[] = session?.messages ?? [];
+  const askedCount = session?.askedQuestionIds.length ?? 0;
+  const dimName = (id: string) => rubric.find((r) => r.id === id)?.name ?? id;
+
+  function rememberPointer(id: string) {
+    try {
+      localStorage.setItem(lastKey, id);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function startInterview() {
+    setStarting(true);
+    const setup: InterviewSetup = {
+      resume: resume.trim() || undefined,
+      companyName: companyName.trim() || undefined,
+      jobDescription: jobDescription.trim() || undefined,
+      roleTitle: roleTitle.trim() || undefined,
+      customFocus: customFocus.trim() || undefined,
+      difficulty,
+      language: LANG_MODE[langChoice],
+    };
+    try {
+      const s = await agent.start(setup, t.id);
+      rememberPointer(s.id);
+      setSession(s);
+      setPhase("interview");
+      setDrawerOpen(false);
+      setResumable(null);
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  async function continueResumable() {
+    if (!resumable) return;
+    const s = await agent.resume(resumable.id);
+    setSession(s);
+    setPhase("interview");
+    setResumable(null);
+  }
+
+  function restartFromResumable() {
+    try {
+      localStorage.removeItem(lastKey);
+    } catch {
+      /* ignore */
+    }
+    setResumable(null);
+    setDrawerOpen(true);
+  }
+
+  async function send() {
+    if (!input.trim() || !session || busy) return;
+    const text = input;
     setInput("");
-  };
+    setPendingUser(text);
+    setBusy(true);
+    try {
+      const { session: s } = await agent.reply(session.id, text);
+      setSession(s);
+    } finally {
+      setPendingUser(null);
+      setBusy(false);
+    }
+  }
+
+  async function endAndReport() {
+    if (!session || generating) return;
+    setGenerating(true);
+    try {
+      const report = await agent.finish(session.id);
+      try {
+        localStorage.setItem(`mirrorhire:report:${session.id}`, JSON.stringify(report));
+      } catch {
+        /* ignore */
+      }
+      navigate({ to: "/report/$sessionId", params: { sessionId: session.id } });
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  // 实时维度：按 rubric 聚合已收集反馈的均分
+  const liveDims = rubric.map((r) => {
+    const scores = messages
+      .map((m) => m.feedback)
+      .filter((f) => f && f.dimension === r.id)
+      .map((f) => f!.score);
+    const v = scores.length
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      : null;
+    return { name: r.name, v };
+  });
+
+  const wrappedUp = session?.state === "WRAPUP" || session?.state === "REPORT";
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -69,27 +257,31 @@ function ChatPage() {
           params={{ id: t.id }}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" /> 返回老师详情
+          <ArrowLeft className="h-4 w-4" /> {t9n("header.back")}
         </Link>
         <div className="ml-auto flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-full border border-warning/40 bg-warning/10 px-3 py-1 font-mono text-[11px] text-warning md:flex">
-            <AlertCircle className="h-3 w-3" />
-            试聊剩余 {round.total - round.used}/{round.total} 轮
-          </div>
+          {phase === "interview" && (
+            <div className="hidden items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] text-foreground md:flex">
+              {t9n("progress.questions", { n: askedCount, m: maxQ })}
+            </div>
+          )}
+          <LanguageSwitcher />
           <PerspectiveSwitcher />
         </div>
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-[260px_1fr_300px]">
-        {/* 左侧：老师卡 + 模式 */}
+        {/* 左侧：老师卡 + 模式 + 场景 */}
         <aside className="hidden flex-col gap-4 border-r border-border bg-sidebar/40 p-4 md:flex">
           <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center gap-3">
               <img src={t.avatar} alt="" className="h-12 w-12 rounded-lg ring-2 ring-primary/40" />
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium">{t.name} · AI 分身</div>
+                <div className="truncate text-sm font-medium">
+                  {t.name} · {t9n("header.aiAvatar")}
+                </div>
                 <div className="font-mono text-[10px] uppercase tracking-widest text-success">
-                  ● 在线
+                  ● {t9n("header.online")}
                 </div>
               </div>
             </div>
@@ -98,23 +290,23 @@ function ChatPage() {
 
           <div>
             <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              辅导模式
+              {t9n("scenario.title")}
             </div>
             <div className="space-y-1">
-              {modes.map((m) => {
-                const active = m.id === mode;
-                const Icon = m.icon;
+              {(["free", "mock", "resume"] as const).map((id) => {
+                const active = id === mode;
+                const Icon = modeIcons[id];
                 return (
                   <button
-                    key={m.id}
-                    onClick={() => setMode(m.id)}
+                    key={id}
+                    onClick={() => setMode(id)}
                     className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
                       active
                         ? "bg-primary/15 text-foreground ring-1 ring-primary/30"
                         : "text-muted-foreground hover:bg-accent"
                     }`}
                   >
-                    <Icon className="h-4 w-4" /> {m.label}
+                    <Icon className="h-4 w-4" /> {t9n(`mode.${id}`)}
                   </button>
                 );
               })}
@@ -122,36 +314,75 @@ function ChatPage() {
           </div>
 
           <div className="glass-panel rounded-xl p-4">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              本次场景
+            <div className="flex items-center justify-between">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                {t9n("scenario.title")}
+              </div>
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="text-muted-foreground hover:text-foreground"
+                title={t9n("config.title")}
+              >
+                <Settings2 className="h-3.5 w-3.5" />
+              </button>
             </div>
-            <div className="mt-1 text-sm font-medium">字节跳动 · 产品经理 · 终面</div>
+            <div className="mt-1 text-sm font-medium">
+              {session?.setup.companyName || session?.setup.roleTitle || t9n("scenario.generic")}
+            </div>
             <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-              <div>· 已上传简历：张雨_PM.pdf</div>
-              <div>· 目标 JD：抖音电商 PM</div>
-              <div>· 已对话：{messages.filter((m) => m.role !== "system").length} 条</div>
+              {session?.setup.roleTitle && (
+                <div>· {t9n("scenario.role")}：{session.setup.roleTitle}</div>
+              )}
+              {session?.setup.customFocus && (
+                <div>· {t9n("scenario.focus")}：{session.setup.customFocus}</div>
+              )}
+              {phase === "interview" && <div>· {t9n("progress.questions", { n: askedCount, m: maxQ })}</div>}
             </div>
           </div>
 
           <div className="mt-auto rounded-md border border-border bg-surface/60 p-3 font-mono text-[10px] text-muted-foreground">
-            AI 生成内容标识：本对话由 AI 分身生成，依据《生成式人工智能服务管理暂行办法》。
+            {t9n("compliance.aiNotice")}
           </div>
         </aside>
 
         {/* 中间：对话流 */}
         <section className="flex min-w-0 flex-col">
-          <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
             <div className="mx-auto max-w-3xl space-y-4">
+              {/* 续连提示 */}
+              {phase === "config" && resumable && (
+                <div className="glass-panel mx-auto max-w-md rounded-xl border border-primary/30 bg-primary/5 p-5 text-center">
+                  <div className="text-sm font-medium text-foreground">{t9n("resume.title")}</div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t9n("resume.desc", { n: resumable.askedQuestionIds.length })}
+                  </p>
+                  <div className="mt-4 flex justify-center gap-2">
+                    <Button size="sm" onClick={continueResumable}>
+                      {t9n("resume.continue")}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={restartFromResumable}>
+                      <RotateCcw className="mr-1 h-3.5 w-3.5" /> {t9n("resume.restart")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 配置空态 */}
+              {phase === "config" && !resumable && (
+                <div className="mx-auto max-w-md rounded-xl border border-dashed border-border p-8 text-center">
+                  <Video className="mx-auto h-8 w-8 text-muted-foreground" />
+                  <p className="mt-3 text-sm text-muted-foreground">{t9n("config.subtitle")}</p>
+                  <Button className="mt-4" onClick={() => setDrawerOpen(true)}>
+                    <Settings2 className="mr-1.5 h-4 w-4" /> {t9n("config.title")}
+                  </Button>
+                </div>
+              )}
+
               {messages.map((m, i) => {
                 if (m.role === "system")
                   return (
                     <div key={i} className="text-center">
                       <StatusBadge tone="info">{m.content}</StatusBadge>
-                      {m.meta && (
-                        <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-                          {m.meta}
-                        </div>
-                      )}
                     </div>
                   );
                 const ai = m.role === "ai";
@@ -164,7 +395,7 @@ function ChatPage() {
                         className="h-8 w-8 shrink-0 rounded-full ring-2 ring-primary/30"
                       />
                     )}
-                    <div className={`max-w-[78%] space-y-1`}>
+                    <div className="max-w-[78%] space-y-1">
                       <div
                         className={`whitespace-pre-wrap rounded-2xl p-4 text-sm leading-relaxed ${
                           ai
@@ -174,12 +405,24 @@ function ChatPage() {
                       >
                         {m.content}
                       </div>
-                      {m.meta && (
-                        <div
-                          className={`font-mono text-[10px] uppercase tracking-wider text-gold ${
-                            ai ? "" : "text-right"
-                          }`}
-                        >
+                      {/* 即时反馈：一句话点评 + 维度标签 + 本题得分（详细留到报告，§13-Q2） */}
+                      {ai && m.feedback && (
+                        <div className="rounded-lg border border-gold/30 bg-gold/5 p-2.5 text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-[10px] uppercase tracking-wider text-gold">
+                              {dimName(m.feedback.dimension)}
+                            </span>
+                            <span className="font-mono text-gold">
+                              {t9n("feedback.score")} {m.feedback.score}
+                            </span>
+                          </div>
+                          {m.feedback.oneLineComment && (
+                            <p className="mt-1 text-muted-foreground">{m.feedback.oneLineComment}</p>
+                          )}
+                        </div>
+                      )}
+                      {ai && m.meta && !m.feedback && (
+                        <div className="font-mono text-[10px] uppercase tracking-wider text-gold">
                           {m.meta}
                         </div>
                       )}
@@ -188,24 +431,20 @@ function ChatPage() {
                 );
               })}
 
-              {showHandoff && (
-                <div className="glass-panel rounded-xl border border-gold/40 bg-gold/10 p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="mt-0.5 h-5 w-5 text-gold" />
-                    <div className="flex-1">
-                      <div className="font-medium text-gold">建议转 1v1 真人辅导</div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        你已连续 3 次问到「具体怎么和 leader 沟通」——这类个性化场景建议直接与 {t.name} 老师本人深入沟通。
-                      </p>
-                      <Link
-                        to="/booking/$teacherId"
-                        params={{ teacherId: t.id }}
-                        className="mt-3 inline-flex h-9 items-center rounded-md gradient-primary px-4 text-sm font-medium text-primary-foreground"
-                      >
-                        查看老师档期 →
-                      </Link>
+              {/* 乐观渲染用户气泡 + 思考中 */}
+              {pendingUser && (
+                <div className="flex flex-row-reverse gap-3">
+                  <div className="max-w-[78%]">
+                    <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-primary/20 p-4 text-sm">
+                      {pendingUser}
                     </div>
                   </div>
+                </div>
+              )}
+              {busy && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <img src={t.avatar} alt="" className="h-8 w-8 rounded-full ring-2 ring-primary/30" />
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t9n("chat.thinking")}
                 </div>
               )}
             </div>
@@ -215,10 +454,19 @@ function ChatPage() {
           <div className="border-t border-border bg-background/85 px-6 py-4">
             <div className="mx-auto max-w-3xl">
               <div className="glass-panel flex items-end gap-2 rounded-xl p-2">
-                <button className="grid h-9 w-9 place-items-center rounded-md text-muted-foreground hover:bg-accent">
+                <button
+                  className="grid h-9 w-9 cursor-not-allowed place-items-center rounded-md text-muted-foreground/50"
+                  title={t9n("chat.attachSoon")}
+                  disabled
+                >
                   <Paperclip className="h-4 w-4" />
                 </button>
-                <button className="grid h-9 w-9 place-items-center rounded-md text-muted-foreground hover:bg-accent">
+                {/* Mic 置灰：语音输入即将上线（§8.3） */}
+                <button
+                  className="relative grid h-9 w-9 cursor-not-allowed place-items-center rounded-md text-muted-foreground/50"
+                  title={t9n("chat.micSoon")}
+                  disabled
+                >
                   <Mic className="h-4 w-4" />
                 </button>
                 <textarea
@@ -231,21 +479,29 @@ function ChatPage() {
                     }
                   }}
                   rows={1}
-                  placeholder="输入你的回答……（Shift+Enter 换行）"
-                  className="max-h-32 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+                  disabled={phase !== "interview" || busy || wrappedUp}
+                  placeholder={t9n("chat.inputPh")}
+                  className="max-h-32 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
                 />
                 <button
                   onClick={send}
-                  className="grid h-9 w-9 place-items-center rounded-md gradient-primary text-primary-foreground"
+                  disabled={phase !== "interview" || busy || wrappedUp || !input.trim()}
+                  className="grid h-9 w-9 place-items-center rounded-md gradient-primary text-primary-foreground disabled:opacity-40"
                 >
                   <Send className="h-4 w-4" />
                 </button>
               </div>
               <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                <span>首字延迟 ≈ 1.6s</span>
-                <Link to="/report/$sessionId" params={{ sessionId: "demo-1" }} className="text-primary-glow hover:underline">
-                  结束并生成评估报告 →
-                </Link>
+                <span>{t.name} · {t9n("header.aiAvatar")}</span>
+                {phase === "interview" && (
+                  <button
+                    onClick={endAndReport}
+                    disabled={generating}
+                    className="text-primary-glow hover:underline disabled:opacity-50"
+                  >
+                    {generating ? t9n("chat.generatingReport") : `${t9n("chat.endAndReport")} →`}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -255,46 +511,137 @@ function ChatPage() {
         <aside className="hidden flex-col gap-4 border-l border-border bg-sidebar/40 p-4 lg:flex">
           <div>
             <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              实时考察维度
+              {t9n("panel.realtimeDims")}
             </div>
-            <div className="space-y-2">
-              {[
-                { l: "表达逻辑", v: 88 },
-                { l: "业务理解", v: 85 },
-                { l: "数据严谨", v: 80 },
-                { l: "抗压应变", v: 74 },
-                { l: "决策表达", v: 78 },
-                { l: "整体印象", v: 81 },
-              ].map((d) => (
-                <div key={d.l} className="glass-panel rounded-md p-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{d.l}</span>
-                    <span className="font-mono text-sm text-foreground">{d.v}</span>
+            {messages.some((m) => m.feedback) ? (
+              <div className="space-y-2">
+                {liveDims.map((d) => (
+                  <div key={d.name} className="glass-panel rounded-md p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{d.name}</span>
+                      <span className="font-mono text-sm text-foreground">{d.v ?? "—"}</span>
+                    </div>
+                    <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
+                      <div className="h-full gradient-primary" style={{ width: `${d.v ?? 0}%` }} />
+                    </div>
                   </div>
-                  <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full gradient-primary"
-                      style={{ width: `${d.v}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="glass-panel rounded-xl p-4">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              AI 实时洞察
-            </div>
-            <ul className="mt-2 space-y-2 text-xs text-muted-foreground">
-              <li>✓ STAR 结构清晰</li>
-              <li>✓ 主动给出 A/B 实验归因</li>
-              <li>⚠ ROI 问题反应较慢</li>
-              <li>⚠ 缺少失败项目复盘</li>
-            </ul>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t9n("panel.noData")}</p>
+            )}
           </div>
         </aside>
       </div>
+
+      {/* 配置抽屉（§4.3） */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="right" className="flex w-full flex-col overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{t9n("config.title")}</SheetTitle>
+            <SheetDescription>{t9n("config.subtitle")}</SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 space-y-4 px-4">
+            <Field label={t9n("config.company")}>
+              <Input
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder={t9n("config.company.ph")}
+              />
+            </Field>
+            <Field label={t9n("config.role")}>
+              <Input
+                value={roleTitle}
+                onChange={(e) => setRoleTitle(e.target.value)}
+                placeholder={t9n("config.role.ph")}
+              />
+            </Field>
+            <Field label={t9n("config.jd")}>
+              <Textarea
+                rows={3}
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                placeholder={t9n("config.jd.ph")}
+              />
+            </Field>
+            <Field label={t9n("config.resume")}>
+              <Textarea
+                rows={4}
+                value={resume}
+                onChange={(e) => setResume(e.target.value)}
+                placeholder={t9n("config.resume.ph")}
+              />
+            </Field>
+            <Field label={t9n("config.focus")}>
+              <Textarea
+                rows={2}
+                value={customFocus}
+                onChange={(e) => setCustomFocus(e.target.value)}
+                placeholder={t9n("config.focus.ph")}
+              />
+            </Field>
+
+            <Field label={t9n("config.difficulty")}>
+              <RadioGroup
+                value={difficulty}
+                onValueChange={(v) => setDifficulty(v as Difficulty)}
+                className="flex gap-2"
+              >
+                {(["warmup", "standard", "stress"] as const).map((d) => (
+                  <label
+                    key={d}
+                    className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/10"
+                  >
+                    <RadioGroupItem value={d} /> {t9n(`difficulty.${d}`)}
+                  </label>
+                ))}
+              </RadioGroup>
+            </Field>
+
+            <Field label={t9n("config.language")}>
+              <RadioGroup
+                value={langChoice}
+                onValueChange={(v) => setLangChoice(v as LangChoice)}
+                className="flex gap-2"
+              >
+                {(["zh", "en", "mix"] as const).map((c) => (
+                  <label
+                    key={c}
+                    className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/10"
+                  >
+                    <RadioGroupItem value={c} /> {t9n(`lang.${c}`)}
+                  </label>
+                ))}
+              </RadioGroup>
+            </Field>
+          </div>
+
+          <SheetFooter>
+            <Button onClick={startInterview} disabled={starting}>
+              {starting ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t9n("config.starting")}
+                </>
+              ) : (
+                t9n("config.start")
+              )}
+            </Button>
+            <Button variant="ghost" onClick={startInterview} disabled={starting}>
+              {t9n("config.skip")}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
     </div>
   );
 }

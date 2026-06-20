@@ -1,4 +1,6 @@
 // 老师 mock 数据
+import { getPublishedProfile } from "./teacherRegistry";
+
 export type Teacher = {
   id: string;
   name: string;
@@ -127,6 +129,30 @@ export const teachers: Teacher[] = [
     hourly: 680,
     packagePrice: 1980,
   },
+  {
+    // t-007：以酪 —— 通过「老师配置平台」上架的运营 / 市场营销面试官（见 teacher.publish.tsx）
+    id: "t-007",
+    name: "以酪",
+    title: "前小红书 增长运营负责人",
+    company: "小红书 / 前美团 用户增长",
+    avatar: avatar("yilao"),
+    tags: ["用户运营", "增长", "内容营销", "投放"],
+    industries: ["互联网", "市场"],
+    rating: 4.87,
+    reviewCount: 176,
+    studentsServed: 690,
+    startingPrice: 109,
+    bio: "8 年互联网运营与增长经验，主导过千万级用户增长项目与多个刷屏 campaign。擅长把模糊的运营目标拆成可落地的指标与动作。",
+    highlights: [
+      "操盘单条 GMV 破千万的内容 campaign",
+      "为 150+ 学员拿到大厂运营 / 市场 offer",
+      "擅长 AARRR 漏斗拆解 + 创意复盘式追问",
+    ],
+    hourly: 920,
+    packagePrice: 3180,
+  },
 ];
 
-export const getTeacher = (id: string) => teachers.find((t) => t.id === id);
+// 先查内置老师，再回退到「老师配置平台」运行期发布的老师（仅客户端可解析，§8.1）。
+export const getTeacher = (id: string): Teacher | undefined =>
+  teachers.find((t) => t.id === id) ?? getPublishedProfile(id);
