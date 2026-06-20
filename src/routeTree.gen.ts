@@ -18,6 +18,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeachersIdRouteImport } from './routes/teachers.$id'
 import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
 import { Route as TeacherScheduleRouteImport } from './routes/teacher.schedule'
+import { Route as TeacherPublishRouteImport } from './routes/teacher.publish'
 import { Route as TeacherPricingRouteImport } from './routes/teacher.pricing'
 import { Route as TeacherEarningsRouteImport } from './routes/teacher.earnings'
 import { Route as TeacherAvatarRouteImport } from './routes/teacher.avatar'
@@ -75,6 +76,11 @@ const TeacherStudentsRoute = TeacherStudentsRouteImport.update({
 const TeacherScheduleRoute = TeacherScheduleRouteImport.update({
   id: '/teacher/schedule',
   path: '/teacher/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherPublishRoute = TeacherPublishRouteImport.update({
+  id: '/teacher/publish',
+  path: '/teacher/publish',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherPricingRoute = TeacherPricingRouteImport.update({
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/teacher/avatar': typeof TeacherAvatarRoute
   '/teacher/earnings': typeof TeacherEarningsRoute
   '/teacher/pricing': typeof TeacherPricingRoute
+  '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
   '/teachers/$id': typeof TeachersIdRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/teacher/avatar': typeof TeacherAvatarRoute
   '/teacher/earnings': typeof TeacherEarningsRoute
   '/teacher/pricing': typeof TeacherPricingRoute
+  '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
   '/teachers/$id': typeof TeachersIdRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/teacher/avatar': typeof TeacherAvatarRoute
   '/teacher/earnings': typeof TeacherEarningsRoute
   '/teacher/pricing': typeof TeacherPricingRoute
+  '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
   '/teachers/$id': typeof TeachersIdRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/teacher/avatar'
     | '/teacher/earnings'
     | '/teacher/pricing'
+    | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
     | '/teachers/$id'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/teacher/avatar'
     | '/teacher/earnings'
     | '/teacher/pricing'
+    | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
     | '/teachers/$id'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/teacher/avatar'
     | '/teacher/earnings'
     | '/teacher/pricing'
+    | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
     | '/teachers/$id'
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   TeacherAvatarRoute: typeof TeacherAvatarRoute
   TeacherEarningsRoute: typeof TeacherEarningsRoute
   TeacherPricingRoute: typeof TeacherPricingRoute
+  TeacherPublishRoute: typeof TeacherPublishRoute
   TeacherScheduleRoute: typeof TeacherScheduleRoute
   TeacherStudentsRoute: typeof TeacherStudentsRoute
   TeachersIdRoute: typeof TeachersIdRoute
@@ -379,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher/schedule'
       fullPath: '/teacher/schedule'
       preLoaderRoute: typeof TeacherScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/publish': {
+      id: '/teacher/publish'
+      path: '/teacher/publish'
+      fullPath: '/teacher/publish'
+      preLoaderRoute: typeof TeacherPublishRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/pricing': {
@@ -492,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherAvatarRoute: TeacherAvatarRoute,
   TeacherEarningsRoute: TeacherEarningsRoute,
   TeacherPricingRoute: TeacherPricingRoute,
+  TeacherPublishRoute: TeacherPublishRoute,
   TeacherScheduleRoute: TeacherScheduleRoute,
   TeacherStudentsRoute: TeacherStudentsRoute,
   TeachersIdRoute: TeachersIdRoute,

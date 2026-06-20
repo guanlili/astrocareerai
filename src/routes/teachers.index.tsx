@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StudentShell } from "@/components/layouts/StudentShell";
-import { teachers } from "@/mock/teachers";
+import { teachers, type Teacher } from "@/mock/teachers";
+import { getPublishedTeachers } from "@/mock/teacherRegistry";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { Search, SlidersHorizontal } from "lucide-react";
 
@@ -21,7 +22,19 @@ function TeachersList() {
   const [industry, setIndustry] = useState("全部");
   const [maxPrice, setMaxPrice] = useState(300);
 
-  const filtered = teachers.filter(
+  // 合并「老师配置平台」运行期发布的老师（仅客户端可读 localStorage，挂载后补入）
+  const [published, setPublished] = useState<Teacher[]>([]);
+  useEffect(() => {
+    const builtinIds = new Set(teachers.map((t) => t.id));
+    setPublished(
+      getPublishedTeachers()
+        .map((p) => p.profile)
+        .filter((p) => !builtinIds.has(p.id)),
+    );
+  }, []);
+
+  const allTeachers = [...published, ...teachers];
+  const filtered = allTeachers.filter(
     (t) =>
       (industry === "全部" || t.industries.includes(industry)) && t.startingPrice <= maxPrice
   );
@@ -32,7 +45,7 @@ function TeachersList() {
         <div className="mx-auto max-w-7xl px-6 py-10">
           <h1 className="font-display text-3xl font-semibold">找老师</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            共 {teachers.length} 位认证老师，全部来自一线企业面试官 / 业务负责人。
+            共 {allTeachers.length} 位认证老师，全部来自一线企业面试官 / 业务负责人。
           </p>
         </div>
       </section>

@@ -8,12 +8,14 @@ import {
   Calendar,
   LineChart,
   Tag,
+  Rocket,
 } from "lucide-react";
 import { PerspectiveSwitcher } from "./PerspectiveSwitcher";
 
 const items: { to: string; label: string; icon: any; exact?: boolean }[] = [
   { to: "/teacher", label: "工作台", icon: LayoutDashboard, exact: true },
   { to: "/teacher/avatar", label: "分身管理", icon: Bot },
+  { to: "/teacher/publish", label: "分身上架", icon: Rocket },
   { to: "/teacher/students", label: "学员管理", icon: Users },
   { to: "/teacher/pricing", label: "服务定价", icon: Tag },
   { to: "/teacher/schedule", label: "档期管理", icon: Calendar },
