@@ -9,10 +9,9 @@ const options = [
 
 export function PerspectiveSwitcher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const current =
-    pathname.startsWith("/admin")
-      ? options[2]
-      : pathname.startsWith("/teacher")
+  const current = pathname.startsWith("/admin")
+    ? options[2]
+    : pathname.startsWith("/teacher")
       ? options[1]
       : options[0];
 
@@ -45,8 +44,8 @@ export function PerspectiveSwitcher() {
           </Link>
         ))}
         <div className="mt-1 border-t border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
-          <Users className="mr-1 inline h-3 w-3" /> 学员 ·{" "}
-          <Bot className="mx-1 inline h-3 w-3" /> 老师
+          <Users className="mr-1 inline h-3 w-3" /> 学员 · <Bot className="mx-1 inline h-3 w-3" />{" "}
+          老师
         </div>
       </div>
     </div>

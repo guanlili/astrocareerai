@@ -1,7 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Search, UserCircle2 } from "lucide-react";
+import { Bell, Search, UserCircle2, RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import { PerspectiveSwitcher } from "./PerspectiveSwitcher";
+import { Toaster } from "@/components/ui/sonner";
+import { resetAppState } from "@/mock/appStore";
 
 const navItems = [
   { to: "/", label: "首页" },
@@ -31,8 +34,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
 
           <nav className="hidden items-center gap-1 md:flex">
             {navItems.map((item) => {
-              const active =
-                item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               return (
                 <Link
                   key={item.to}
@@ -72,7 +74,8 @@ export function StudentShell({ children }: { children: ReactNode }) {
           <div className="md:col-span-2">
             <div className="font-display text-lg font-semibold">面镜 MirrorHire</div>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              以老师 IP 为核心的 AI 数字分身面试辅导平台。让每位求职者拥有专属导师，让优秀经验规模化传承。
+              以老师 IP 为核心的 AI
+              数字分身面试辅导平台。让每位求职者拥有专属导师，让优秀经验规模化传承。
             </p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-gold">
               <span className="h-1.5 w-1.5 rounded-full bg-gold" />
@@ -97,10 +100,23 @@ export function StudentShell({ children }: { children: ReactNode }) {
             </ul>
           </div>
         </div>
-        <div className="border-t border-border/60 py-4 text-center font-mono text-xs text-muted-foreground">
-          © 2026 MirrorHire · 仅为产品原型 · Demo Only
+        <div className="flex flex-col items-center gap-2 border-t border-border/60 py-4 text-center font-mono text-xs text-muted-foreground sm:flex-row sm:justify-center sm:gap-4">
+          <span>© 2026 MirrorHire · 仅为产品原型 · Demo Only</span>
+          <button
+            onClick={() => {
+              resetAppState();
+              toast.success("演示数据已重置", {
+                description: "收藏 / 预约 / 订单 / 审核状态均已回到初始状态",
+              });
+            }}
+            className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <RotateCcw className="h-3 w-3" /> 重置演示数据
+          </button>
         </div>
       </footer>
+
+      <Toaster richColors position="top-center" />
     </div>
   );
 }

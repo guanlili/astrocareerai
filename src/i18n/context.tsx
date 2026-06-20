@@ -12,13 +12,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  detectLocale,
-  dictionaries,
-  interpolate,
-  type Locale,
-  type TKey,
-} from "./dictionary";
+import { detectLocale, dictionaries, interpolate, type Locale, type TKey } from "./dictionary";
 
 const STORAGE_KEY = "mirrorhire:locale";
 
@@ -42,8 +36,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     } catch {
       /* 隐私模式等 → 忽略 */
     }
-    const next: Locale =
-      saved === "zh" || saved === "en" ? saved : detectLocale();
+    const next: Locale = saved === "zh" || saved === "en" ? saved : detectLocale();
     if (next !== locale) setLocaleState(next);
     // 仅挂载时运行一次
     // eslint-disable-next-line react-hooks/exhaustive-deps

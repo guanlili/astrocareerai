@@ -40,8 +40,7 @@ export const PM_QUESTION_BANK: QuestionNode[] = [
     topic: "自我介绍",
     dimension: "expression",
     difficulty: "warmup",
-    prompt:
-      "用 90 秒做个自我介绍，重点讲一段你最有代表性的项目经历，说清楚你的角色与拿到的结果。",
+    prompt: "用 90 秒做个自我介绍，重点讲一段你最有代表性的项目经历，说清楚你的角色与拿到的结果。",
     followUps: [
       "你刚才提到的结果，是怎么量化的？口径是什么？",
       "这段经历里你做过最艰难的一个取舍是什么？",
@@ -83,8 +82,7 @@ export const PM_QUESTION_BANK: QuestionNode[] = [
     topic: "岗位匹配",
     dimension: "fit",
     difficulty: "standard",
-    prompt:
-      "为什么是这个岗位、这家公司？结合你对我们业务的理解，说说你能立刻补上的那块短板。",
+    prompt: "为什么是这个岗位、这家公司？结合你对我们业务的理解，说说你能立刻补上的那块短板。",
     appliesTo: { roleKeywords: ["产品", "经理", "终面", "manager"] },
   },
   {
@@ -92,8 +90,7 @@ export const PM_QUESTION_BANK: QuestionNode[] = [
     topic: "简历深挖",
     dimension: "business",
     difficulty: "standard",
-    prompt:
-      "挑你简历里你自己最不满意的一段经历，复盘一下：当时如果重来，你会改哪三步？",
+    prompt: "挑你简历里你自己最不满意的一段经历，复盘一下：当时如果重来，你会改哪三步？",
   },
   {
     id: "pm-close",
@@ -137,7 +134,10 @@ export const OPS_QUESTION_BANK: QuestionNode[] = [
     difficulty: "standard",
     prompt:
       "给你一个全新功能要做冷启动，预算有限。你会怎么从 0 跑出第一批种子用户？先讲框架，再讲第一步。",
-    followUps: ["你怎么判断当前阶段该堆量还是堆质？", "第一批用户留不下来，你会先改产品还是先改运营？"],
+    followUps: [
+      "你怎么判断当前阶段该堆量还是堆质？",
+      "第一批用户留不下来，你会先改产品还是先改运营？",
+    ],
     appliesTo: { roleKeywords: ["运营", "增长", "拉新", "留存", "growth"] },
   },
   {
@@ -145,8 +145,7 @@ export const OPS_QUESTION_BANK: QuestionNode[] = [
     topic: "效果衡量",
     dimension: "data",
     difficulty: "standard",
-    prompt:
-      "你怎么判断一次运营活动到底有没有效？别只给我看 GMV，告诉我你会盯哪几个指标、为什么。",
+    prompt: "你怎么判断一次运营活动到底有没有效？别只给我看 GMV，告诉我你会盯哪几个指标、为什么。",
     followUps: ["如果指标涨了，但其实是节日大盘红利，你怎么把你的增量剥离出来？"],
   },
   {

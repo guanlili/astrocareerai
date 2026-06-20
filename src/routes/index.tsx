@@ -8,7 +8,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "面镜 MirrorHire · 老师 IP × AI 数字分身面试辅导平台" },
-      { name: "description", content: "找真正做过面试官的老师，AI 分身 7×24 陪练，关键时刻无缝转 1v1。" },
+      {
+        name: "description",
+        content: "找真正做过面试官的老师，AI 分身 7×24 陪练，关键时刻无缝转 1v1。",
+      },
       { property: "og:title", content: "面镜 MirrorHire" },
       { property: "og:description", content: "老师 IP × AI 数字分身，让每位求职者拥有专属导师。" },
     ],
@@ -149,8 +152,16 @@ function Home() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { icon: Bot, t: "老师专属知识库", d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。" },
-            { icon: MessageSquare, t: "动态追问 ≠ 题库", d: "AI 基于上一轮回答生成下一题，告别固定脚本。" },
+            {
+              icon: Bot,
+              t: "老师专属知识库",
+              d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。",
+            },
+            {
+              icon: MessageSquare,
+              t: "动态追问 ≠ 题库",
+              d: "AI 基于上一轮回答生成下一题，告别固定脚本。",
+            },
             { icon: Target, t: "六维可追溯评估", d: "雷达图分数可下钻到对话片段，不是黑盒打分。" },
             { icon: Users, t: "AI + 真人闭环", d: "AI 处理 80% 重复问题，触发条件自动转人工。" },
           ].map((f) => (
@@ -177,10 +188,7 @@ function Home() {
               来自一线的面试官，已数字化
             </h2>
           </div>
-          <Link
-            to="/teachers"
-            className="text-sm text-primary-glow hover:underline"
-          >
+          <Link to="/teachers" className="text-sm text-primary-glow hover:underline">
             查看全部 186 位老师 →
           </Link>
         </div>
@@ -194,7 +202,11 @@ function Home() {
               className="group glass-panel relative overflow-hidden rounded-xl p-5 transition-all hover:ring-1 hover:ring-primary/40"
             >
               <div className="flex items-center gap-3">
-                <img src={t.avatar} alt="" className="h-12 w-12 rounded-full ring-2 ring-primary/30" />
+                <img
+                  src={t.avatar}
+                  alt=""
+                  className="h-12 w-12 rounded-full ring-2 ring-primary/30"
+                />
                 <div className="min-w-0">
                   <div className="truncate font-medium">{t.name}</div>
                   <div className="truncate font-mono text-[11px] text-muted-foreground">

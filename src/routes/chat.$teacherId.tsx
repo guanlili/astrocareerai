@@ -112,9 +112,7 @@ function ChatPage() {
   const [roleTitle, setRoleTitle] = useState("");
   const [customFocus, setCustomFocus] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("standard");
-  const [langChoice, setLangChoice] = useState<LangChoice>(
-    langFromMode(config.style.language),
-  );
+  const [langChoice, setLangChoice] = useState<LangChoice>(langFromMode(config.style.language));
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -240,9 +238,7 @@ function ChatPage() {
       .map((m) => m.feedback)
       .filter((f) => f && f.dimension === r.id)
       .map((f) => f!.score);
-    const v = scores.length
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : null;
+    const v = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
     return { name: r.name, v };
   });
 
@@ -331,12 +327,18 @@ function ChatPage() {
             </div>
             <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
               {session?.setup.roleTitle && (
-                <div>· {t9n("scenario.role")}：{session.setup.roleTitle}</div>
+                <div>
+                  · {t9n("scenario.role")}：{session.setup.roleTitle}
+                </div>
               )}
               {session?.setup.customFocus && (
-                <div>· {t9n("scenario.focus")}：{session.setup.customFocus}</div>
+                <div>
+                  · {t9n("scenario.focus")}：{session.setup.customFocus}
+                </div>
               )}
-              {phase === "interview" && <div>· {t9n("progress.questions", { n: askedCount, m: maxQ })}</div>}
+              {phase === "interview" && (
+                <div>· {t9n("progress.questions", { n: askedCount, m: maxQ })}</div>
+              )}
             </div>
           </div>
 
@@ -417,7 +419,9 @@ function ChatPage() {
                             </span>
                           </div>
                           {m.feedback.oneLineComment && (
-                            <p className="mt-1 text-muted-foreground">{m.feedback.oneLineComment}</p>
+                            <p className="mt-1 text-muted-foreground">
+                              {m.feedback.oneLineComment}
+                            </p>
                           )}
                         </div>
                       )}
@@ -443,7 +447,11 @@ function ChatPage() {
               )}
               {busy && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <img src={t.avatar} alt="" className="h-8 w-8 rounded-full ring-2 ring-primary/30" />
+                  <img
+                    src={t.avatar}
+                    alt=""
+                    className="h-8 w-8 rounded-full ring-2 ring-primary/30"
+                  />
                   <Loader2 className="h-4 w-4 animate-spin" /> {t9n("chat.thinking")}
                 </div>
               )}
@@ -492,7 +500,9 @@ function ChatPage() {
                 </button>
               </div>
               <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                <span>{t.name} · {t9n("header.aiAvatar")}</span>
+                <span>
+                  {t.name} · {t9n("header.aiAvatar")}
+                </span>
                 {phase === "interview" && (
                   <button
                     onClick={endAndReport}

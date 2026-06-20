@@ -50,8 +50,7 @@ export type MockInterviewAgentDeps = {
 };
 
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
-const avg = (xs: number[]) =>
-  xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : undefined;
+const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : undefined);
 
 export class MockInterviewAgent implements InterviewClient {
   private readonly configProvider: TeacherConfigProvider;
@@ -70,8 +69,7 @@ export class MockInterviewAgent implements InterviewClient {
     this.store = deps.store;
     this.clock = deps.clock ?? Date.now;
     this.idGen =
-      deps.idGen ??
-      (() => `s_${this.clock()}_${Math.random().toString(36).slice(2, 8)}`);
+      deps.idGen ?? (() => `s_${this.clock()}_${Math.random().toString(36).slice(2, 8)}`);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -100,9 +98,7 @@ export class MockInterviewAgent implements InterviewClient {
 
     // 选第 1 题（通常为自我介绍 / warmup 类），开场不需要反馈。
     // 开场优先 warmup 难度，避免一上来就抛尖锐押题；无 warmup 时回退常规选题。
-    const warmup = config.knowledge.questionBank.find(
-      (n) => n.difficulty === "warmup",
-    );
+    const warmup = config.knowledge.questionBank.find((n) => n.difficulty === "warmup");
     const selection = warmup
       ? {
           branch: "coverage" as const,
@@ -122,11 +118,7 @@ export class MockInterviewAgent implements InterviewClient {
       needFeedback: false,
     };
 
-    const { output, raw, latencyMs } = await this.callModel(
-      config,
-      session,
-      directive,
-    );
+    const { output, raw, latencyMs } = await this.callModel(config, session, directive);
     await this.event(session, "question_selected", selection, config);
 
     const askedId = this.recordAsked(session, selection.questionId, directive.dimension);
@@ -187,9 +179,7 @@ export class MockInterviewAgent implements InterviewClient {
     const wrapUp = askedCount >= maxQ || session.elapsedMs + elapsedAdd >= maxMs;
 
     // 选下一题（非收尾时）。第 1 次作答后倾向追问，保证「动态追问」体感（§7.4）。
-    const selection = wrapUp
-      ? null
-      : selectNextQuestion(config, session, askedCount === 1);
+    const selection = wrapUp ? null : selectNextQuestion(config, session, askedCount === 1);
 
     const directive: TurnDirective = {
       phase: wrapUp ? "WRAPUP" : "FEEDBACK_THEN_QUESTION",
@@ -201,11 +191,7 @@ export class MockInterviewAgent implements InterviewClient {
       needFeedback: true,
     };
 
-    const { output, raw, parseOk, latencyMs } = await this.callModel(
-      config,
-      session,
-      directive,
-    );
+    const { output, raw, parseOk, latencyMs } = await this.callModel(config, session, directive);
 
     // 即时反馈（每答一题必出，§5.3）；解析失败降级为占位反馈，保证不崩溃（§10）
     const feedback: AnswerFeedback = answeredId
@@ -414,9 +400,7 @@ export class MockInterviewAgent implements InterviewClient {
   }
 
   private collectFeedback(session: InterviewSession): AnswerFeedback[] {
-    return session.messages
-      .map((m) => m.feedback)
-      .filter((f): f is AnswerFeedback => !!f);
+    return session.messages.map((m) => m.feedback).filter((f): f is AnswerFeedback => !!f);
   }
 
   private aggregateReport(
@@ -440,9 +424,7 @@ export class MockInterviewAgent implements InterviewClient {
     const dimensions = rubric.map((r) => {
       let score = modelDimByName.get(r.name);
       if (score == null) {
-        const dimScores = perQuestion
-          .filter((f) => f.dimension === r.id)
-          .map((f) => f.score);
+        const dimScores = perQuestion.filter((f) => f.dimension === r.id).map((f) => f.score);
         score = clamp(avg(dimScores) ?? fallbackAll);
       }
       return { name: r.name, score };
@@ -451,40 +433,31 @@ export class MockInterviewAgent implements InterviewClient {
     // overall = 各维度按 rubric.weight 加权（§6.2）
     const totalW = rubric.reduce((s, r) => s + r.weight, 0) || rubric.length;
     const overall = clamp(
-      dimensions.reduce((s, d, i) => s + d.score * (rubric[i]?.weight ?? 1), 0) /
-        totalW,
+      dimensions.reduce((s, d, i) => s + d.score * (rubric[i]?.weight ?? 1), 0) / totalW,
     );
 
     const arr = (v: unknown, fb: string[]) =>
-      Array.isArray(v) && v.every((x) => typeof x === "string") && v.length
-        ? (v as string[])
-        : fb;
+      Array.isArray(v) && v.every((x) => typeof x === "string") && v.length ? (v as string[]) : fb;
 
-    const highlights = arr(
-      parsed?.highlights,
-      perQuestion.flatMap((f) => f.strengths).slice(0, 3),
-    );
+    const highlights = arr(parsed?.highlights, perQuestion.flatMap((f) => f.strengths).slice(0, 3));
     const weaknesses = arr(
       parsed?.weaknesses,
       perQuestion.flatMap((f) => f.improvements).slice(0, 3),
     );
-    const suggestions = arr(parsed?.suggestions, [
-      "针对本场暴露的薄弱维度做专项练习。",
-    ]);
+    const suggestions = arr(parsed?.suggestions, ["针对本场暴露的薄弱维度做专项练习。"]);
 
     const hasFocus = !!session.setup.customFocus?.trim();
     const customFocusFeedback = hasFocus
-      ? parsed?.customFocusFeedback ?? {
+      ? (parsed?.customFocusFeedback ?? {
           focus: session.setup.customFocus!.trim(),
           assessment: "已针对你的关注点进行观察，建议结合下方行动项持续打磨。",
           actionItems: ["把关注点拆成可练习的具体动作", "下次模拟前自评一次"],
-        }
+        })
       : undefined;
 
     // §9 转化触发：模型建议 或 关键维度持续偏低
     const lowDim = dimensions.some((d) => d.score < 55);
-    const handoffRecommended =
-      parsed?.handoffRecommended === true || lowDim;
+    const handoffRecommended = parsed?.handoffRecommended === true || lowDim;
 
     return {
       sessionId: session.id,

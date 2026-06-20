@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { StudentShell } from "@/components/layouts/StudentShell";
 import { getTeacher } from "@/mock/teachers";
 import { StatusBadge } from "@/components/common/PanelKit";
-import { Check, MessageSquare, Calendar, Star } from "lucide-react";
+import { useAppState, toggleFavorite } from "@/mock/appStore";
+import { Check, MessageSquare, Calendar, Star, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/teachers/$id")({
   head: ({ params }) => {
@@ -33,31 +35,80 @@ export const Route = createFileRoute("/teachers/$id")({
 });
 
 const reviews = [
-  { name: "张同学", role: "字节 PM offer", stars: 5, content: "陈昊老师的分身追问非常真实，比我面试官还狠。重点是真的拿到 offer。", date: "2 周前" },
-  { name: "Lily", role: "腾讯 PM offer", stars: 5, content: "六维评估能定位到对话片段，让我每次复盘都知道改哪里。", date: "1 个月前" },
-  { name: "Marcus L.", role: "美团高级 PM", stars: 4, content: "建议增加更多硬件类岗位的案例。", date: "1 个月前" },
+  {
+    name: "张同学",
+    role: "字节 PM offer",
+    stars: 5,
+    content: "陈昊老师的分身追问非常真实，比我面试官还狠。重点是真的拿到 offer。",
+    date: "2 周前",
+  },
+  {
+    name: "Lily",
+    role: "腾讯 PM offer",
+    stars: 5,
+    content: "六维评估能定位到对话片段，让我每次复盘都知道改哪里。",
+    date: "1 个月前",
+  },
+  {
+    name: "Marcus L.",
+    role: "美团高级 PM",
+    stars: 4,
+    content: "建议增加更多硬件类岗位的案例。",
+    date: "1 个月前",
+  },
 ];
 
 function TeacherDetail() {
   const t = getTeacher(Route.useParams().id)!; // loader 已 notFound 兜底，渲染期必存在
+  const { favorites, trialUsage } = useAppState();
+  const fav = favorites.includes(t.id);
+  const trialTotal = 5;
+  const used = trialUsage.find((u) => u.teacherId === t.id)?.used ?? 0;
+  const trialLeft = Math.max(0, trialTotal - used);
+
+  function onFav() {
+    const nowFav = toggleFavorite(t.id);
+    toast[nowFav ? "success" : "info"](nowFav ? "已收藏老师" : "已取消收藏", {
+      description: `${t.name}${nowFav ? " 已加入「我的」收藏" : ""}`,
+    });
+  }
 
   return (
     <StudentShell>
       <section className="border-b border-border/60 bg-surface/30">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 md:grid-cols-[1fr_320px]">
           <div className="flex gap-6">
-            <img src={t.avatar} alt="" className="h-32 w-32 shrink-0 rounded-xl ring-2 ring-primary/40" />
+            <img
+              src={t.avatar}
+              alt=""
+              className="h-32 w-32 shrink-0 rounded-xl ring-2 ring-primary/40"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="font-display text-3xl font-semibold">{t.name}</h1>
                 <StatusBadge tone="gold">已认证</StatusBadge>
                 <StatusBadge tone="info">AI 分身在线</StatusBadge>
+                <button
+                  onClick={onFav}
+                  title={fav ? "取消收藏" : "收藏老师"}
+                  className="ml-1 inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-surface/60 px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-destructive"
+                >
+                  <Heart
+                    className={`h-3.5 w-3.5 ${fav ? "fill-destructive text-destructive" : ""}`}
+                  />
+                  {fav ? "已收藏" : "收藏"}
+                </button>
               </div>
-              <div className="mt-1 text-muted-foreground">{t.title} · {t.company}</div>
+              <div className="mt-1 text-muted-foreground">
+                {t.title} · {t.company}
+              </div>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {t.tags.map((tag: string) => (
-                  <span key={tag} className="rounded-full bg-accent/60 px-2.5 py-0.5 text-xs text-muted-foreground">
+                  <span
+                    key={tag}
+                    className="rounded-full bg-accent/60 px-2.5 py-0.5 text-xs text-muted-foreground"
+                  >
                     {tag}
                   </span>
                 ))}
@@ -65,15 +116,21 @@ function TeacherDetail() {
 
               <div className="mt-5 flex items-center gap-6 font-mono text-sm">
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">综合评分</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    综合评分
+                  </div>
                   <div className="text-2xl text-gold">★ {t.rating}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">服务学员</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    服务学员
+                  </div>
                   <div className="text-2xl">{t.studentsServed.toLocaleString()}+</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">评价</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    评价
+                  </div>
                   <div className="text-2xl">{t.reviewCount}</div>
                 </div>
               </div>
@@ -89,9 +146,15 @@ function TeacherDetail() {
               <span className="text-sm text-muted-foreground">/月</span>
             </div>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li className="flex gap-2"><Check className="h-4 w-4 text-success" /> 不限轮次对话 · 模拟面试</li>
-              <li className="flex gap-2"><Check className="h-4 w-4 text-success" /> 简历优化 5 次/月</li>
-              <li className="flex gap-2"><Check className="h-4 w-4 text-success" /> 六维评估报告</li>
+              <li className="flex gap-2">
+                <Check className="h-4 w-4 text-success" /> 不限轮次对话 · 模拟面试
+              </li>
+              <li className="flex gap-2">
+                <Check className="h-4 w-4 text-success" /> 简历优化 5 次/月
+              </li>
+              <li className="flex gap-2">
+                <Check className="h-4 w-4 text-success" /> 六维评估报告
+              </li>
             </ul>
             <Link
               to="/chat/$teacherId"
@@ -138,7 +201,10 @@ function TeacherDetail() {
               {reviews.map((r, i) => (
                 <div key={i} className="glass-panel rounded-lg p-4">
                   <div className="flex items-center justify-between">
-                    <div className="font-medium">{r.name}<span className="ml-2 text-xs text-muted-foreground">{r.role}</span></div>
+                    <div className="font-medium">
+                      {r.name}
+                      <span className="ml-2 text-xs text-muted-foreground">{r.role}</span>
+                    </div>
                     <div className="font-mono text-xs text-muted-foreground">{r.date}</div>
                   </div>
                   <div className="mt-1 flex gap-0.5">
@@ -158,10 +224,15 @@ function TeacherDetail() {
           <div className="mt-4 space-y-3 text-sm">
             <PriceRow label="AI 分身月订阅" price={`¥${t.startingPrice}/月`} note="不限轮次" />
             <PriceRow label="单次 1v1（60min）" price={`¥${t.hourly}`} note="真人辅导" />
-            <PriceRow label="Package（4 次 + AI）" price={`¥${t.packagePrice}`} note="推荐" highlight />
+            <PriceRow
+              label="Package（4 次 + AI）"
+              price={`¥${t.packagePrice}`}
+              note="推荐"
+              highlight
+            />
           </div>
           <div className="mt-5 rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
-            ⚠ 试聊轮次：5 / 5 剩余。超出后弹出订阅引导。
+            ⚠ 试聊轮次：{trialLeft} / {trialTotal} 剩余。超出后弹出订阅引导。
           </div>
         </aside>
       </section>
@@ -169,14 +240,32 @@ function TeacherDetail() {
   );
 }
 
-function PriceRow({ label, price, note, highlight }: { label: string; price: string; note: string; highlight?: boolean }) {
+function PriceRow({
+  label,
+  price,
+  note,
+  highlight,
+}: {
+  label: string;
+  price: string;
+  note: string;
+  highlight?: boolean;
+}) {
   return (
-    <div className={`flex items-center justify-between rounded-md border p-3 ${highlight ? "border-gold/40 bg-gold/10" : "border-border bg-surface/60"}`}>
+    <div
+      className={`flex items-center justify-between rounded-md border p-3 ${highlight ? "border-gold/40 bg-gold/10" : "border-border bg-surface/60"}`}
+    >
       <div>
         <div className="text-sm">{label}</div>
-        <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{note}</div>
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          {note}
+        </div>
       </div>
-      <div className={`font-mono text-base font-semibold ${highlight ? "text-gold" : "text-foreground"}`}>{price}</div>
+      <div
+        className={`font-mono text-base font-semibold ${highlight ? "text-gold" : "text-foreground"}`}
+      >
+        {price}
+      </div>
     </div>
   );
 }

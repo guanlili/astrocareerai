@@ -11,7 +11,6 @@ import {
   Tag,
   type LucideIcon,
 } from "lucide-react";
-import { Toaster } from "@/components/ui/sonner";
 import { getStudio, type PublishStatus } from "@/mock/teacherStudio";
 import { PerspectiveSwitcher } from "./PerspectiveSwitcher";
 
@@ -112,7 +111,6 @@ export function TeacherShell({
         </header>
         <main className="p-6">{children}</main>
       </div>
-      <Toaster richColors position="top-center" />
     </div>
   );
 }

@@ -156,9 +156,7 @@ export const dictionaries: Record<Locale, Record<TKey, string>> = { zh, en };
 /** 把 {var} 占位符替换为实际值。 */
 export function interpolate(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (_, k) =>
-    k in vars ? String(vars[k]) : `{${k}}`,
-  );
+  return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? String(vars[k]) : `{${k}}`));
 }
 
 /** 从浏览器语言推断默认 locale，识别不到回退中文。 */

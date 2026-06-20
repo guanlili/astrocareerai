@@ -203,11 +203,7 @@ export type InterviewEvent = {
 // §6.1 模型结构化输出契约（每回合）
 // ──────────────────────────────────────────────────────────────────────────
 
-export type ModelTurnPhase =
-  | "INTRO"
-  | "QUESTION"
-  | "FEEDBACK_THEN_QUESTION"
-  | "WRAPUP";
+export type ModelTurnPhase = "INTRO" | "QUESTION" | "FEEDBACK_THEN_QUESTION" | "WRAPUP";
 
 /** 主持模型每回合返回的 JSON（§6.1 输出格式）。 */
 export type ModelTurnOutput = {
