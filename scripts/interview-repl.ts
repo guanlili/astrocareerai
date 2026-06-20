@@ -61,9 +61,7 @@ function printAi(msg: ChatMsg) {
 function printReport(r: InterviewReport) {
   sep();
   console.log(`📊 评估报告  总分 ${r.overall}`);
-  console.log(
-    "维度：" + r.dimensions.map((d) => `${d.name} ${d.score}`).join(" · "),
-  );
+  console.log("维度：" + r.dimensions.map((d) => `${d.name} ${d.score}`).join(" · "));
   console.log("亮点：" + r.highlights.join("；"));
   console.log("不足：" + r.weaknesses.join("；"));
   console.log("建议：" + r.suggestions.join("；"));

@@ -316,16 +316,8 @@ function ChatPage() {
                   : `${t9n("llm.mocking")} · ${llm.reason ?? ""}`
             }
           >
-            {!llm ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Sparkles className="h-3 w-3" />
-            )}
-            {!llm
-              ? t9n("llm.checking")
-              : llm.enabled
-                ? `Qwen · ${llm.model}`
-                : t9n("llm.mocking")}
+            {!llm ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+            {!llm ? t9n("llm.checking") : llm.enabled ? `Qwen · ${llm.model}` : t9n("llm.mocking")}
           </div>
           <LanguageSwitcher />
           <PerspectiveSwitcher />
@@ -572,7 +564,8 @@ function ChatPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
+                    // 防误发：单独 Enter 只换行，需 Ctrl/⌘+Enter 才发送（或点发送按钮）
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                       e.preventDefault();
                       send();
                     }

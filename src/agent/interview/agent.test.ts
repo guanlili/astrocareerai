@@ -29,12 +29,29 @@ function makeConfig(over?: Partial<TeacherAvatarConfig>): TeacherAvatarConfig {
     style: { tone: 50, technicality: 60, verbosity: 50 },
     knowledge: {
       questionBank: [
-        { id: "q1", topic: "自我介绍", dimension: "expression", difficulty: "warmup", prompt: "介绍下自己" },
-        { id: "q2", topic: "业务", dimension: "business", difficulty: "standard", prompt: "讲个项目" },
+        {
+          id: "q1",
+          topic: "自我介绍",
+          dimension: "expression",
+          difficulty: "warmup",
+          prompt: "介绍下自己",
+        },
+        {
+          id: "q2",
+          topic: "业务",
+          dimension: "business",
+          difficulty: "standard",
+          prompt: "讲个项目",
+        },
       ],
       rubric: RUBRIC,
     },
-    guardrails: { maxQuestions: 6, targetDurationMin: 30, targetDurationMax: 45, stayInScope: true },
+    guardrails: {
+      maxQuestions: 6,
+      targetDurationMin: 30,
+      targetDurationMax: 45,
+      stayInScope: true,
+    },
     ...over,
   };
 }
@@ -89,7 +106,12 @@ describe("guardrails", () => {
     const clock = makeClock();
     // 把题数上限调高，确保只有「时长」能触发收尾（与题数上限隔离）
     const config = makeConfig({
-      guardrails: { maxQuestions: 50, targetDurationMin: 30, targetDurationMax: 45, stayInScope: true },
+      guardrails: {
+        maxQuestions: 50,
+        targetDurationMin: 30,
+        targetDurationMax: 45,
+        stayInScope: true,
+      },
     });
     const { agent } = makeAgent({ clock: clock.now, config });
     const s0 = await agent.start(SETUP, "t-test");
@@ -164,9 +186,11 @@ describe("语言模式注入（§5.5 / §6.1）", () => {
 
 describe("健壮性", () => {
   test("模型返回非 JSON → 降级为纯文本气泡，不崩溃", async () => {
-    const garbageModel: ModelClient = { async complete() {
-      return "这不是 JSON，只是一段普通文本。";
-    } };
+    const garbageModel: ModelClient = {
+      async complete() {
+        return "这不是 JSON，只是一段普通文本。";
+      },
+    };
     const { agent } = makeAgent({ model: garbageModel });
     const s0 = await agent.start(SETUP, "t-test");
     const { message } = await agent.reply(s0.id, "我的回答");

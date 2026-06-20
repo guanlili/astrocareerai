@@ -68,7 +68,9 @@ function BookingPage() {
       if (!r) return;
       const report = JSON.parse(r) as InterviewReport;
       const session = s
-        ? (JSON.parse(s) as { setup?: { companyName?: string; roleTitle?: string; customFocus?: string } })
+        ? (JSON.parse(s) as {
+            setup?: { companyName?: string; roleTitle?: string; customFocus?: string };
+          })
         : undefined;
       const scene =
         [session?.setup?.companyName, session?.setup?.roleTitle].filter(Boolean).join(" · ") ||
@@ -205,7 +207,8 @@ function BookingPage() {
                 </div>
                 <div className="text-sm text-muted-foreground">
                   来自你刚完成的模拟面试「{bg.scene}」，综合评分{" "}
-                  <span className="font-mono text-foreground">{bg.overall}</span>。老师将在 1v1 前预习，直接针对薄弱项展开。
+                  <span className="font-mono text-foreground">{bg.overall}</span>。老师将在 1v1
+                  前预习，直接针对薄弱项展开。
                 </div>
                 {bg.customFocus && (
                   <div className="mt-2 text-sm">

@@ -241,9 +241,7 @@ export class QwenModelClient implements ModelClient {
         errors.push(`${model} → ${msg}`);
       }
     }
-    throw new Error(
-      `所有候选模型均不可用（${this.models.join(", ")}）：${errors.join(" | ")}`,
-    );
+    throw new Error(`所有候选模型均不可用（${this.models.join(", ")}）：${errors.join(" | ")}`);
   }
 
   private async callOnce(
