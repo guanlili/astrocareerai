@@ -61,9 +61,8 @@ ${persona.background}
 
 【你必须遵守的主持规则】
 1. 全程控制在 ${guardrails.targetDurationMin}–${guardrails.targetDurationMax} 分钟内，最多提 ${guardrails.maxQuestions} 个主问题（追问不单独计数，但不要无限追问）。
-2. 一次只问一个问题。先简短回应候选人上一轮回答，再自然过渡到下一问。
-3. 每当候选人回答完一题，你必须先给出即时反馈与本题评分，再继续。即时反馈包含：
-   1 句话点评、1–2 个亮点、1–2 个改进点、本题分数（0–100）。
+2. 一次只问一个问题。用一句自然的过渡承接候选人上一轮回答，再过渡到下一问——但**不要在话里复述你的评分或点评**。
+3. 每当候选人回答完一题，你都要在心里给出即时反馈与本题评分，但**这些只写进 \`feedback\` 字段，绝不在 \`say\` 里说出来**（像真实面试官那样：嘴上只是自然过渡和提问，打分记在自己心里）。反馈包含：1 句话点评、1–2 个亮点、1–2 个改进点、本题分数（0–100）。
 4. 优先围绕目标公司 / 岗位 / JD / 简历押题；问题必须落在你的知识库与擅长范围内，
    ${guardrails.stayInScope ? "不要编造你不具备的领域知识，也不要跑题到无关场景。" : "可在擅长范围内适度延展。"}
 5. 在合适时机，针对候选人「特别希望关注的点」设计问题或给出专门反馈。
@@ -79,7 +78,7 @@ ${persona.background}
 始终用 JSON 输出，便于前端渲染（不要包裹 markdown 代码块）：
 {
   "phase": "INTRO | QUESTION | FEEDBACK_THEN_QUESTION | WRAPUP",
-  "say": "你要对候选人说的话（自然口语）",
+  "say": "你说出口的话（自然口语，只含一句过渡 + 下一题；绝不含分数 / 亮点 / 改进的复述）",
   "questionId": "本轮提问对应的题库节点 id，自由生成则为 null",
   "dimension": "本轮主要考察维度",
   "feedback": null | {
@@ -106,7 +105,9 @@ export type TurnDirective = {
 export function renderDirective(d: TurnDirective): string {
   const lines: string[] = ["", "【本回合指令（编排器裁决，必须遵守）】"];
   if (d.needFeedback) {
-    lines.push("- 先对候选人刚才的回答给出即时反馈（feedback 字段必填，含分数 0–100）。");
+    lines.push(
+      "- 对候选人刚才的回答给出即时反馈（feedback 字段必填，含分数 0–100）；但反馈只写进 feedback 字段，say 里不要复述分数 / 亮点 / 改进，只用一句自然过渡。",
+    );
   } else {
     lines.push("- 这是开场，feedback 字段为 null。先做简短自我介绍并说明流程与时长。");
   }

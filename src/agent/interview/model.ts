@@ -141,9 +141,13 @@ export class StubModelClient implements ModelClient {
     // 普通答题回合：反馈 + 下一题（按考察维度确定性抖动分数，让六维 / 追问 / 转人工可演示）
     const dim = dimFromSystem(input.system);
     const fb = DIM_FEEDBACK[dim];
+    // 从本回合指令里取「下一题种子」，让 say 像真人那样自然提问；
+    // 反馈只进 feedback 字段，say 不复述分数 / 点评（§6.4）。
+    const seed = input.system.match(/下一题种子[^：:]*[：:]\s*(.+)/)?.[1]?.trim();
+    const say = seed ? `嗯，我了解了。${seed}` : "嗯，我了解了。我们继续下一个问题吧。";
     return JSON.stringify({
       phase: "FEEDBACK_THEN_QUESTION",
-      say: "我先简单点评一下你刚才的回答，然后我们继续下一个问题。",
+      say,
       questionId: null,
       dimension: dim,
       feedback: {
@@ -237,9 +241,7 @@ export class QwenModelClient implements ModelClient {
         errors.push(`${model} → ${msg}`);
       }
     }
-    throw new Error(
-      `所有候选模型均不可用（${this.models.join(", ")}）：${errors.join(" | ")}`,
-    );
+    throw new Error(`所有候选模型均不可用（${this.models.join(", ")}）：${errors.join(" | ")}`);
   }
 
   private async callOnce(

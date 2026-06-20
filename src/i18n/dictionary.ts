@@ -60,7 +60,9 @@ const zh = {
 
   // 对话
   "chat.thinking": "面试官思考中……",
-  "chat.inputPh": "输入你的回答……（Shift+Enter 换行）",
+  "chat.typing": "正在输入…",
+  "chat.skipTyping": "点击跳过逐字显示",
+  "chat.inputPh": "输入你的回答……（Enter 换行，⌘/Ctrl+Enter 发送）",
   "chat.micSoon": "语音输入即将上线",
   "chat.attachSoon": "附件上传即将上线",
   "chat.endAndReport": "结束并生成评估报告",
@@ -134,7 +136,9 @@ const en: Record<TKey, string> = {
   "panel.noData": "Your per-dimension performance will appear here as you answer.",
 
   "chat.thinking": "Interviewer is thinking…",
-  "chat.inputPh": "Type your answer… (Shift+Enter for newline)",
+  "chat.typing": "is typing…",
+  "chat.skipTyping": "Click to skip typing",
+  "chat.inputPh": "Type your answer… (Enter for newline, ⌘/Ctrl+Enter to send)",
   "chat.micSoon": "Voice input coming soon",
   "chat.attachSoon": "File upload coming soon",
   "chat.endAndReport": "End & generate report",
