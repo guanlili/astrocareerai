@@ -15,8 +15,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PerspectiveSwitcher } from "./PerspectiveSwitcher";
-import { Toaster } from "@/components/ui/sonner";
 import { resetAppState } from "@/mock/appStore";
+// 注：<Toaster> 已在 __root.tsx 全局挂载，各 Shell 不再重复挂载（否则 toast 会弹两遍）。
 
 const items: { to: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { to: "/admin", label: "总览", icon: LayoutDashboard, exact: true },
@@ -139,8 +139,6 @@ export function AdminShell({
         </nav>
         <main className="p-5 sm:p-7">{children}</main>
       </div>
-
-      <Toaster richColors position="top-center" />
     </div>
   );
 }

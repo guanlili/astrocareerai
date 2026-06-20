@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { StudentShell } from "@/components/layouts/StudentShell";
 import { StatusBadge } from "@/components/common/PanelKit";
-import { useAppState, refundBooking, type Booking } from "@/mock/appStore";
+import { useAppState, refundBooking, bookingToOrder } from "@/mock/appStore";
 import { getTeacher } from "@/mock/teachers";
 
 export const Route = createFileRoute("/me")({
@@ -13,25 +13,14 @@ export const Route = createFileRoute("/me")({
 
 const tabs = ["订单", "收藏", "练习历史", "订阅", "消息", "账户"] as const;
 
-/** 把 booking 转成订单表格行（与 seedOrders 同构）。 */
-function bookingToOrderRow(b: Booking) {
-  return {
-    id: b.id,
-    teacher: b.teacherName,
-    type: (b.duration === 120 ? "1v1辅导" : "试聊") as "1v1辅导" | "试聊",
-    amount: b.amount,
-    status: b.status,
-    date: new Date(b.createdAt).toISOString().slice(0, 10),
-  };
-}
-
 function Me() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("订单");
   const st = useAppState();
 
-  // 订单：用户下单（bookings，最新优先）+ 种子历史订单。stable 排序，SSR 安全。
+  // 订单：本人下单（bookings → 同一换算为 Order）+ 种子历史订单。复用 appStore.bookingToOrder
+  // 作为唯一换算通道，保证 type / date 与 admin、老师端完全一致。
   const myOrders = useMemo(() => {
-    const fromBookings = st.bookings.map(bookingToOrderRow);
+    const fromBookings = st.bookings.map(bookingToOrder);
     const merged = [...fromBookings, ...st.seedOrders];
     return merged.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   }, [st.bookings, st.seedOrders]);

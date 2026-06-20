@@ -12,8 +12,8 @@ import {
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { PerspectiveSwitcher } from "./PerspectiveSwitcher";
-import { Toaster } from "@/components/ui/sonner";
 import { resetAppState } from "@/mock/appStore";
+// 注：<Toaster> 已在 __root.tsx 全局挂载，各 Shell 不再重复挂载（否则 toast 会弹两遍）。
 
 const navItems = [
   { to: "/", label: "首页", icon: Home },
@@ -147,8 +147,6 @@ export function StudentShell({ children }: { children: ReactNode }) {
           })}
         </div>
       </nav>
-
-      <Toaster richColors position="top-center" />
     </div>
   );
 }

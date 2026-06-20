@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useMockState, teacherEarnings, ordersForTeacher } from "@/mock/store";
+import { useMockState, teacherEarnings, ordersForTeacher, commissionFor } from "@/mock/store";
 import type { OrderStatus } from "@/mock/store";
 
 export const Route = createFileRoute("/teacher/earnings")({
@@ -39,16 +39,19 @@ function EarningsPage() {
   const mine = ordersForTeacher(st, TEACHER_NAME);
 
   // 流水行：由真实订单派生 {source, gross, fee, net, status}
+  // 佣金仅对已结算单（已支付/已完成）计取，与 teacherEarnings 聚合 fee 口径一致；
+  // 退款类显示为负数（抵扣视图），其余未结算单佣金为 0。
   const txns = mine.map((o) => {
-    const fee = Math.round(o.amount * 0.15); // 平台抽佣 15%
+    const isRefund = o.status === "退款" || o.status === "已退款";
+    const isSettled = o.status === "已支付" || o.status === "已完成";
+    const fee = isSettled ? commissionFor(o.amount) : 0;
     return {
       id: o.id,
       date: o.date,
       source: `${o.type} · ${o.student}`,
-      // 退款类显示为负数（抵扣视图）
-      gross: o.status === "退款" || o.status === "已退款" ? -o.amount : o.amount,
-      fee: o.status === "退款" || o.status === "已退款" ? 0 : fee,
-      net: o.status === "退款" || o.status === "已退款" ? -o.amount : o.amount - fee,
+      gross: isRefund ? -o.amount : o.amount,
+      fee,
+      net: isRefund ? -o.amount : o.amount - fee,
       status: o.status,
     };
   });

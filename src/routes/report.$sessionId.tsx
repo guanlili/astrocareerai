@@ -112,14 +112,15 @@ function ReportPage() {
   const idx = sessions.findIndex((s) => s.sessionId === sessionId);
   const prevOverall = idx >= 0 && idx < sessions.length - 1 ? sessions[idx + 1].overall : null;
   const delta = prevOverall != null ? report.overall - prevOverall : null;
-  const sessionNo = Math.max(1, sessions.length - Math.max(0, idx));
+  // 仅当本场已在 sessions 中登记时才计次，否则不臆造序号（避免「第 N 次」与实际不符）
+  const sessionNo = idx >= 0 ? Math.max(1, sessions.length - idx) : null;
 
   return (
     <StudentShell>
       <section className="border-b border-border/60 bg-surface/30">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <StatusBadge tone="gold">
-            第 {sessionNo} 次模拟面试 · {loaded.scene}
+            {sessionNo ? `第 ${sessionNo} 次模拟面试 · ${loaded.scene}` : loaded.scene}
           </StatusBadge>
           <h1 className="mt-3 font-display text-3xl font-semibold">
             综合评分 <span className="font-mono text-5xl text-gold">{report.overall}</span>

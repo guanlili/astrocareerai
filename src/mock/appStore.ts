@@ -22,6 +22,8 @@ import {
   adminComplianceItems,
   type Order as PlatformOrder,
 } from "./platform";
+import { resetStudio } from "./teacherStudio";
+import { resetPublishedTeachers } from "./teacherRegistry";
 
 // ──────────────────────────────────────────────────────────────────────────
 // 类型
@@ -396,13 +398,18 @@ export function useMockState(): AppState {
 // 订单 / 预约互转（bookings ⇄ orders 同步的唯一通道）
 // ──────────────────────────────────────────────────────────────────────────
 
-function bookingToOrder(b: Booking): Order {
+/**
+ * Booking → Order 的唯一换算（学生「我的」、admin 支付、老师收益共用）。
+ * 导出供 me 页复用，避免各处重复换算导致 type / date 跨端不一致。
+ * 1v1 预约页下单的均按「1v1辅导」计（时长差异已记在 duration 字段）。
+ */
+export function bookingToOrder(b: Booking): Order {
   return {
     id: b.id,
     student: b.studentName,
     teacher: b.teacherName,
     teacherId: b.teacherId,
-    type: b.duration === 120 ? "1v1辅导" : "1v1辅导",
+    type: "1v1辅导",
     amount: b.amount,
     status: b.status,
     date: isoDate(b.createdAt),
@@ -582,22 +589,28 @@ export function ordersForTeacher(state: AppState, teacherName: string): Order[] 
   return state.orders.filter((o) => o.teacher === teacherName);
 }
 
+/** 平台抽佣比例（聚合 fee 与收益页逐行 fee 共用此常量，保证两者一致）。 */
+export const COMMISSION_RATE = 0.15;
+
+/** 单笔订单佣金：按金额逐笔取整（Σ逐笔 = 聚合 fee，避免「总额取整」与「逐笔取整」错位）。 */
+export function commissionFor(amount: number): number {
+  return Math.round(amount * COMMISSION_RATE);
+}
+
 /**
  * 某老师收益：计入「已支付 / 已完成」，扣除「退款 / 已退款」；
- * 「待确认 / 退款中」单列为待确认金额。
+ * 「待确认」单列为待确认金额（「退款中」属资金流出，不计入待确认/冻结）。
+ * 佣金仅对已结算单计取，逐笔取整求和，与收益页 fee 列口径一致。
  */
 export function teacherEarnings(state: AppState, teacherName: string) {
   const mine = ordersForTeacher(state, teacherName);
-  const settled = mine
-    .filter((o) => o.status === "已支付" || o.status === "已完成")
-    .reduce((s, o) => s + o.amount, 0);
+  const settledOrders = mine.filter((o) => o.status === "已支付" || o.status === "已完成");
+  const settled = settledOrders.reduce((s, o) => s + o.amount, 0);
   const refunded = mine
     .filter((o) => o.status === "退款" || o.status === "已退款")
     .reduce((s, o) => s + o.amount, 0);
-  const pending = mine
-    .filter((o) => o.status === "待确认" || o.status === "退款中")
-    .reduce((s, o) => s + o.amount, 0);
-  const fee = Math.round((settled - refunded) * 0.15); // 平台抽佣 15%
+  const pending = mine.filter((o) => o.status === "待确认").reduce((s, o) => s + o.amount, 0);
+  const fee = settledOrders.reduce((s, o) => s + commissionFor(o.amount), 0);
   return {
     gross: settled,
     refunded,
@@ -834,8 +847,14 @@ export function setComplianceStatus(id: string, status: ComplianceStatus): void 
 // 重置
 // ──────────────────────────────────────────────────────────────────────────
 
-/** 清空 localStorage 演示数据并回到 SEED（跨端同步生效）。 */
+/**
+ * 清空 localStorage 演示数据并回到 SEED（跨端同步生效）。
+ * 一并重置老师端独立 store（teacherStudio 草稿 / 已发布老师注册表），
+ * 让「重置演示数据」真正覆盖三端所有可变状态（含被预约占用的档期、运行期发布的老师）。
+ */
 export function resetAppState(): void {
+  resetStudio();
+  resetPublishedTeachers();
   commit(seed());
 }
 

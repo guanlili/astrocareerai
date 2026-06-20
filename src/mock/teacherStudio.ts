@@ -256,6 +256,17 @@ export function updateStudio(patch: Partial<StudioState>): StudioState {
   return next;
 }
 
+/** 把草稿重置回默认（演示重置用：恢复被预约占用的档期、改过的定价等）。 */
+export function resetStudio(): StudioState {
+  const next = defaultStudio();
+  try {
+    if (typeof localStorage !== "undefined") localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* 隐私模式等 → 忽略 */
+  }
+  return next;
+}
+
 /** 发布草稿到学生端（复用既有 publishTeacher 契约，消费侧不变）。 */
 export function publishStudio(): StudioState {
   const s = getStudio();

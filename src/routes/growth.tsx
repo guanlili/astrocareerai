@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { StudentShell } from "@/components/layouts/StudentShell";
 import { KpiCard, SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { growthTrend, reportData } from "@/mock/sessions";
@@ -150,8 +150,6 @@ function GrowthPage() {
   const trend = derived?.trend ?? growthTrend;
   const dimensions = derived?.dimensions ?? reportData.dimensions;
   const k = derived?.kpis;
-
-  const realHistory = useMemo(() => history, [history]);
 
   return (
     <StudentShell>
@@ -308,7 +306,7 @@ function GrowthPage() {
               </tr>
             </thead>
             <tbody>
-              {realHistory.map((h) => {
+              {history.map((h) => {
                 const isSeed = h.id.startsWith("seed-");
                 return (
                   <tr key={h.id} className="border-t border-border/60 hover:bg-accent/30">
