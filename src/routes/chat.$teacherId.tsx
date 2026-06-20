@@ -300,6 +300,19 @@ function ChatPage() {
               {t9n("progress.questions", { n: askedCount, m: maxQ })}
             </div>
           )}
+          {/* 切换视频面试间：仅当老师有 video 配置时显示（§P4 切换入口）*/}
+          {config.video && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 text-xs"
+              onClick={() => navigate({ to: "/video/$teacherId", params: { teacherId: t.id } })}
+              title="切换为视频面试间（数字人 + 语音）"
+            >
+              <Video className="h-3.5 w-3.5" />
+              视频模式
+            </Button>
+          )}
           <div
             className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] md:flex ${
               !llm

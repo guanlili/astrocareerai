@@ -68,6 +68,9 @@ export type TeacherAvatarConfig = {
 
   // —— handoff：转人工策略（本期默认值，未来由老师后台 / 配置中心产出）——
   handoff?: HandoffPolicy;
+
+  // —— video：数字人视频配置（SPEC_video §5.1，可选，缺省则无视频入口）——
+  video?: TeacherVideoConfig;
 };
 
 /** 结构化题库节点：支持「按上一题动态选择 / 追问」。 */
@@ -130,9 +133,37 @@ export type InterviewSetup = {
 
 export type ChatRole = "ai" | "user" | "system";
 
+// ──────────────────────────────────────────────────────────────────────────
+// SPEC_video_interview_v1.md §5.1 数字人视频配置（可选，缺省则无视频入口）
+// ──────────────────────────────────────────────────────────────────────────
+
+/** HeyGen 数字人 + 语音配置（挂在 TeacherAvatarConfig.video? 上）。 */
+export type TeacherVideoConfig = {
+  provider: "heygen"; // 预留多供应商
+  avatarId: string; // HeyGen Interactive/Photo Avatar id
+  /** 是否为老师本人形象（false = stock avatar）。 */
+  isPersonalAvatar?: boolean;
+  voice: {
+    voiceId: string; // HeyGen voice id
+    rate?: number; // 语速 0.5–1.5
+    emotion?: string; // HeyGen 情绪标签（可选）
+  };
+  /** 多语言声线：跟随本场 LanguageMode.primary（§5.5）。 */
+  voiceByLang?: Partial<Record<"zh" | "en", { voiceId: string; rate?: number }>>;
+  quality?: "low" | "medium" | "high";
+  background?: { type: "color" | "image"; value: string };
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// SPEC_video_interview_v1.md §5.2 消息呈现形态（向后兼容可选字段）
+// ──────────────────────────────────────────────────────────────────────────
+
+export type ChatModality = "text" | "voice";
+
 /**
  * 扩展现有 ChatMsg（src/mock/sessions.ts 由此处再导出），保持向后兼容。
  * 旧字段 role / content / meta 不变，新增 questionId / feedback 为可选。
+ * videoroom 新增 modality / media（均可选，文字版不读这些字段）。
  */
 export type ChatMsg = {
   role: ChatRole;
@@ -140,6 +171,14 @@ export type ChatMsg = {
   meta?: string; // 现有：考察维度标签
   questionId?: string; // 本消息对应的题目（AI 提问时）
   feedback?: AnswerFeedback; // 即时反馈（AI 对上一答的点评）
+  /** 消息的产生 / 呈现形态（videoroom 填 "voice"，chatroom 可省略）。 */
+  modality?: ChatModality;
+  /** 语音元信息（videoroom 落 audioUrl / durationMs / asrConfidence）。 */
+  media?: {
+    audioUrl?: string;
+    durationMs?: number;
+    asrConfidence?: number; // ASR 置信度 0–1
+  };
 };
 
 export type AnswerFeedback = {

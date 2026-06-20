@@ -14,6 +14,7 @@ import type {
   QuestionNode,
   RubricDimension,
   TeacherAvatarConfig,
+  TeacherVideoConfig,
 } from "@/agent/interview/types";
 import { getTeacher } from "./teachers";
 import { getPublishedConfig } from "./teacherRegistry";
@@ -296,6 +297,43 @@ export function defaultHandoffPolicy(): HandoffPolicy {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// 数字人视频配置（SPEC_video §5.1 / Q5 决策）
+//
+// 都实现：有本人形象的老师填真实 avatarId（isPersonalAvatar: true），
+// 没有本人形象的走 HeyGen stock Interactive Avatar。
+// avatarId / voiceId 从 HeyGen labs.heygen.com → Interactive Avatar 获取。
+// 这里预填 t-007 以酪的 stock 配置，其余老师暂不开启视频（video 缺省 = 无入口）。
+// ──────────────────────────────────────────────────────────────────────────
+
+// HeyGen 公共 stock avatar（无需本人形象）：
+// 访问 https://labs.heygen.com/interactive-avatar 点"Select Avatar"可查 ID。
+// 以下 ID 仅供占位，接入时替换为实际可用 ID。
+const STOCK_AVATAR_ZH_FEMALE: TeacherVideoConfig = {
+  provider: "heygen",
+  // TODO: 替换为实际 HeyGen stock 中文女性 avatar ID（labs.heygen.com → Interactive Avatar）
+  avatarId: "Anna_public_3_20240108",
+  isPersonalAvatar: false,
+  voice: {
+    // TODO: 替换为 HeyGen 中文女声 voiceId（HeyGen 语音库 → 中文女声）
+    voiceId: "2d5b0e6664724a1f0fada7c9ad69fc26",
+    rate: 1.0,
+  },
+  voiceByLang: {
+    zh: { voiceId: "2d5b0e6664724a1f0fada7c9ad69fc26", rate: 1.0 },
+    en: { voiceId: "2d5b0e6664724a1f0fada7c9ad69fc26", rate: 0.95 },
+  },
+  quality: "medium",
+  background: { type: "color", value: "#0A1628" },
+};
+
+const VIDEO_CONFIGS: Partial<Record<string, TeacherVideoConfig>> = {
+  // t-007 以酪（运营 / 市场，中文女声，stock avatar 先行）
+  "t-007": STOCK_AVATAR_ZH_FEMALE,
+  // 未来：本人形象上线后替换 avatarId 并设 isPersonalAvatar: true
+  // "t-001": { provider: "heygen", avatarId: "t001_personal_xxxx", isPersonalAvatar: true, ... }
+};
+
+// ──────────────────────────────────────────────────────────────────────────
 // 配置组装：按 teacherId 产出 TeacherAvatarConfig（覆盖全部 mock 老师）
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -341,6 +379,7 @@ export function buildTeacherConfig(teacherId: string): TeacherAvatarConfig {
       stayInScope: true,
     },
     handoff: defaultHandoffPolicy(),
+    video: VIDEO_CONFIGS[teacherId],
   };
 }
 
