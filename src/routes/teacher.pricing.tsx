@@ -1,63 +1,150 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { TeacherShell } from "@/components/layouts/TeacherShell";
-import { SectionTitle, StatusBadge } from "@/components/common/PanelKit";
+import { SectionTitle } from "@/components/common/PanelKit";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
+import { getStudio, updateStudio, type PricingConfig } from "@/mock/teacherStudio";
 
 export const Route = createFileRoute("/teacher/pricing")({
   head: () => ({ meta: [{ title: "服务定价 · 面镜 老师" }] }),
   component: PricingPage,
 });
 
-const rules = [
-  { id: "r1", trigger: "对话中出现「具体案例」「我的情况」连续 ≥ 3 次", action: "提示转人工", enabled: true },
-  { id: "r2", trigger: "学员明确表达「想找您本人」", action: "立即转人工", enabled: true },
-  { id: "r3", trigger: "对话轮次 ≥ 25 且未付费", action: "推荐 Package", enabled: true },
-  { id: "r4", trigger: "薪资谈判 / 职场纠纷类问题", action: "提示老师介入", enabled: false },
-];
-
 function PricingPage() {
+  const [p, setP] = useState<PricingConfig>(() => getStudio().pricing);
+  useEffect(() => setP(getStudio().pricing), []);
+
+  function update(patch: Partial<PricingConfig>) {
+    const next = { ...p, ...patch };
+    setP(next);
+    updateStudio({ pricing: next });
+  }
+
   return (
-    <TeacherShell title="服务与定价">
+    <TeacherShell title="服务与定价" subtitle="改价 / 规则实时保存到草稿，刷新后保留">
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="space-y-6">
           <div className="glass-panel rounded-xl p-6">
             <SectionTitle title="AI 分身定价" />
-            <Row k="服务模式" v="月订阅 · ¥99 / 月" />
-            <Row k="试聊轮次" v="5 轮" />
-            <Row k="按次套餐" v="¥29 / 次（不限轮）" />
-            <button className="mt-2 text-sm text-primary-glow hover:underline">+ 新增套餐</button>
+            <PriceField
+              label="AI 月订阅"
+              value={p.aiMonthly}
+              onChange={(v) => update({ aiMonthly: v })}
+              suffix="/月"
+            />
+            <PriceField
+              label="试聊轮次"
+              value={p.trialRounds}
+              onChange={(v) => update({ trialRounds: v })}
+              suffix="轮"
+              plain
+            />
+            <PriceField
+              label="按次套餐"
+              value={p.perSession}
+              onChange={(v) => update({ perSession: v })}
+              suffix="/次"
+            />
           </div>
 
           <div className="glass-panel rounded-xl p-6">
             <SectionTitle title="真人 1v1 定价" />
-            <Row k="单次 60min" v="¥880" />
-            <Row k="单次 120min" v="¥1,680" />
-            <Row k="Package（4 次 + AI 月卡）" v="¥2,980" highlight />
-            <Row k="加急（48h 内）" v="+30%" />
+            <PriceField
+              label="单次 60min"
+              value={p.human60}
+              onChange={(v) => update({ human60: v })}
+            />
+            <PriceField
+              label="单次 120min"
+              value={p.human120}
+              onChange={(v) => update({ human120: v })}
+            />
+            <PriceField
+              label="Package（4 次 + AI 月卡）"
+              value={p.packagePrice}
+              onChange={(v) => update({ packagePrice: v })}
+              highlight
+            />
+            <PriceField
+              label="加急（48h 内）"
+              value={p.rushSurchargePct}
+              onChange={(v) => update({ rushSurchargePct: v })}
+              suffix="%"
+              plain
+            />
           </div>
         </div>
 
         <div className="glass-panel rounded-xl p-6">
-          <SectionTitle title="AI → 真人 转换规则" desc="AI 满足任一条件时，向学员推送预约 1v1 CTA" />
+          <SectionTitle
+            title="AI → 真人 转换规则"
+            desc="AI 满足任一条件时，向学员推送预约 1v1 CTA"
+          />
           <div className="space-y-3">
-            {rules.map((r) => (
-              <div key={r.id} className="flex items-center gap-4 rounded-md border border-border bg-surface/40 p-4">
-                <div className="flex-1">
-                  <div className="text-sm">{r.trigger}</div>
-                  <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-gold">
-                    → {r.action}
-                  </div>
+            {p.handoffRules.map((r) => (
+              <div key={r.id} className="rounded-md border border-border bg-surface/40 p-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    value={r.trigger}
+                    onChange={(e) =>
+                      update({
+                        handoffRules: p.handoffRules.map((x) =>
+                          x.id === r.id ? { ...x, trigger: e.target.value } : x,
+                        ),
+                      })
+                    }
+                    className="flex-1 rounded-md border border-border bg-transparent px-2 py-1 text-sm outline-none focus:border-primary"
+                  />
+                  <Switch
+                    checked={r.enabled}
+                    onCheckedChange={(v) =>
+                      update({
+                        handoffRules: p.handoffRules.map((x) =>
+                          x.id === r.id ? { ...x, enabled: v } : x,
+                        ),
+                      })
+                    }
+                  />
+                  <button
+                    onClick={() =>
+                      update({ handoffRules: p.handoffRules.filter((x) => x.id !== r.id) })
+                    }
+                    className="text-muted-foreground hover:text-destructive"
+                    title="删除"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-                <label className="relative inline-flex cursor-pointer items-center">
-                  <input type="checkbox" defaultChecked={r.enabled} className="peer sr-only" />
-                  <div className="h-5 w-9 rounded-full bg-muted peer-checked:bg-primary after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-4" />
-                </label>
-                <button className="text-muted-foreground hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <input
+                  value={r.action}
+                  onChange={(e) =>
+                    update({
+                      handoffRules: p.handoffRules.map((x) =>
+                        x.id === r.id ? { ...x, action: e.target.value } : x,
+                      ),
+                    })
+                  }
+                  className="mt-2 w-full rounded-md border border-transparent bg-gold/5 px-2 py-1 font-mono text-[11px] uppercase tracking-wider text-gold outline-none focus:border-gold/40"
+                />
               </div>
             ))}
-            <button className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-2 text-sm text-muted-foreground hover:text-foreground">
+            <button
+              onClick={() =>
+                update({
+                  handoffRules: [
+                    ...p.handoffRules,
+                    {
+                      id: `r${Date.now()}`,
+                      trigger: "新触发条件",
+                      action: "提示转人工",
+                      enabled: true,
+                    },
+                  ],
+                })
+              }
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-2 text-sm text-muted-foreground hover:text-foreground"
+            >
               <Plus className="h-4 w-4" /> 新增规则
             </button>
           </div>
@@ -71,11 +158,40 @@ function PricingPage() {
   );
 }
 
-function Row({ k, v, highlight }: { k: string; v: string; highlight?: boolean }) {
+function PriceField({
+  label,
+  value,
+  onChange,
+  suffix,
+  highlight,
+  plain,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+  highlight?: boolean;
+  plain?: boolean;
+}) {
   return (
-    <div className={`flex items-center justify-between rounded-md px-4 py-3 ${highlight ? "ring-1 ring-gold/40 bg-gold/10" : "bg-surface/40"} mb-2`}>
-      <span className="text-sm">{k}</span>
-      <span className={`font-mono ${highlight ? "text-gold" : "text-foreground"}`}>{v}</span>
+    <div
+      className={`mb-2 flex items-center justify-between rounded-md px-4 py-2.5 ${
+        highlight ? "ring-1 ring-gold/40 bg-gold/10" : "bg-surface/40"
+      }`}
+    >
+      <span className="text-sm">{label}</span>
+      <span className="flex items-baseline gap-0.5">
+        {!plain && <span className="font-mono text-sm text-muted-foreground">¥</span>}
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className={`w-24 bg-transparent text-right font-mono outline-none ${
+            highlight ? "text-gold" : "text-foreground"
+          }`}
+        />
+        {suffix && <span className="font-mono text-xs text-muted-foreground">{suffix}</span>}
+      </span>
     </div>
   );
 }
