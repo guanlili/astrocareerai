@@ -4,7 +4,7 @@ import { TeacherShell } from "@/components/layouts/TeacherShell";
 import { SectionTitle } from "@/components/common/PanelKit";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
-import { getStudio, updateStudio, type PricingConfig } from "@/mock/teacherStudio";
+import { defaultStudio, getStudio, updateStudio, type PricingConfig } from "@/mock/teacherStudio";
 
 export const Route = createFileRoute("/teacher/pricing")({
   head: () => ({ meta: [{ title: "服务定价 · 面镜 老师" }] }),
@@ -12,7 +12,8 @@ export const Route = createFileRoute("/teacher/pricing")({
 });
 
 function PricingPage() {
-  const [p, setP] = useState<PricingConfig>(() => getStudio().pricing);
+  // 初始化用 defaultStudio()（SSR/首帧一致），useEffect 再填充 localStorage 真实值，避免 hydration 不一致。
+  const [p, setP] = useState<PricingConfig>(() => defaultStudio().pricing);
   useEffect(() => setP(getStudio().pricing), []);
 
   function update(patch: Partial<PricingConfig>) {

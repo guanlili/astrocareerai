@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  defaultStudio,
   getStudio,
   updateStudio,
   publishStudio,
@@ -62,10 +63,13 @@ const TRAINING_STAGES = [
 ];
 
 function StudioPage() {
-  // 用本地 state 管理 Tab（避免 validateSearch：它是本仓首个带 search schema 的路由，
-  // 会扰动 TanStack 全局路由类型推断，致 teachers/$id、chat/$teacherId 的 useLoaderData() 退化为 undefined）。
+  // Tab 用本地 state（纯前端展示态，无需 URL 持久化）。
+  // 注：早期曾担心给本路由加 search schema 会扰动 useLoaderData 推断；后经核实该推断退化是
+  // teachers/$id、chat/$teacherId 路由自身问题（origin/main 即复现，与 search schema 无关），
+  // 已改用 useParams + getTeacher 修复。此处保留本地 state 仅为产品取向，非类型/性能规避。
   const [tab, setTab] = useState<TabKey>("materials");
-  const [studio, setStudio] = useState<StudioState>(() => getStudio());
+  // 初始化用 defaultStudio() 让 SSR 与客户端首帧一致，useEffect 再填充 localStorage 真实值，避免 hydration 不一致。
+  const [studio, setStudio] = useState<StudioState>(() => defaultStudio());
   const [published, setPublished] = useState<PublishedTeacher[]>([]);
 
   useEffect(() => {

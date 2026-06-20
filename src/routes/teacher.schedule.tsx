@@ -5,6 +5,7 @@ import { StatCard } from "@/components/common/StatCard";
 import {
   SCHEDULE_DAYS,
   SCHEDULE_SLOTS,
+  defaultStudio,
   getStudio,
   updateStudio,
   type ScheduleConfig,
@@ -18,7 +19,8 @@ export const Route = createFileRoute("/teacher/schedule")({
 const TOTAL = SCHEDULE_DAYS.length * SCHEDULE_SLOTS.length;
 
 function SchedulePage() {
-  const [sched, setSched] = useState<ScheduleConfig>(() => getStudio().schedule);
+  // 初始化用 defaultStudio()（SSR/首帧一致），useEffect 再填充 localStorage 真实值，避免 hydration 不一致。
+  const [sched, setSched] = useState<ScheduleConfig>(() => defaultStudio().schedule);
   useEffect(() => setSched(getStudio().schedule), []);
 
   const openSet = new Set(sched.open);
