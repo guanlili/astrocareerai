@@ -109,6 +109,96 @@ export class StubModelClient implements ModelClient {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// QwenModelClient —— Qwen ModelStudio / 阿里云 DashScope（OpenAI 兼容接口）
+// ──────────────────────────────────────────────────────────────────────────
+
+export type QwenModelClientOptions = {
+  apiKey?: string; // 默认读 DASHSCOPE_API_KEY（仅服务端）
+  model?: string; // 默认 qwen-plus
+  baseUrl?: string; // 默认 DashScope compatible-mode
+  maxTokens?: number;
+  temperature?: number;
+  jsonMode?: boolean; // 强制 JSON 输出（提示词需含 "json"），默认 true
+};
+
+/**
+ * 通过 DashScope 的 OpenAI 兼容端点调用 Qwen（fetch，无额外依赖）。
+ * 仅应在服务端构造（密钥不可进客户端）。system 作为首条 system 消息，
+ * ChatMsg 映射为 user / assistant。
+ */
+export class QwenModelClient implements ModelClient {
+  readonly model: string;
+  private readonly apiKey: string;
+  private readonly baseUrl: string;
+  private readonly maxTokens: number;
+  private readonly temperature: number;
+  private readonly jsonMode: boolean;
+
+  constructor(opts: QwenModelClientOptions = {}) {
+    this.apiKey = opts.apiKey ?? process.env.DASHSCOPE_API_KEY ?? "";
+    this.model = opts.model ?? process.env.QWEN_MODEL ?? "qwen-plus";
+    this.baseUrl =
+      opts.baseUrl ??
+      process.env.QWEN_BASE_URL ??
+      "https://dashscope.aliyuncs.com/compatible-mode/v1";
+    this.maxTokens = opts.maxTokens ?? 1200;
+    this.temperature = opts.temperature ?? 0.7;
+    this.jsonMode = opts.jsonMode ?? true;
+    if (!this.apiKey) {
+      throw new Error(
+        "QwenModelClient 需要 API key（构造参数 apiKey 或环境变量 DASHSCOPE_API_KEY）。",
+      );
+    }
+  }
+
+  async complete(input: { system: string; messages: ChatMsg[] }): Promise<string> {
+    const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+      { role: "system", content: input.system },
+      ...input.messages
+        .filter((m) => m.content?.trim())
+        .map((m) => ({
+          role:
+            m.role === "user"
+              ? ("user" as const)
+              : m.role === "system"
+                ? ("system" as const)
+                : ("assistant" as const),
+          content: m.content,
+        })),
+    ];
+    // 兼容接口要求至少一条 user 消息
+    if (!messages.some((m) => m.role === "user")) {
+      messages.push({ role: "user", content: "（面试开始）" });
+    }
+
+    const res = await fetch(`${this.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages,
+        max_tokens: this.maxTokens,
+        temperature: this.temperature,
+        ...(this.jsonMode ? { response_format: { type: "json_object" } } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      // 注意：不要把密钥写进错误信息
+      const text = await res.text().catch(() => "");
+      throw new Error(`Qwen API ${res.status}: ${text.slice(0, 400)}`);
+    }
+    const data = (await res.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    return data.choices?.[0]?.message?.content ?? "";
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // ClaudeModelClient —— 真实 Claude API（§10）
 // ──────────────────────────────────────────────────────────────────────────
 
