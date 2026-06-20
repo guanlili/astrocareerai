@@ -61,3 +61,8 @@ export function publishTeacher(entry: Omit<PublishedTeacher, "publishedAt">): vo
 export function unpublishTeacher(id: string): void {
   writeAll(readAll().filter((p) => p.profile.id !== id));
 }
+
+/** 清空所有运行期发布的老师（演示重置用；内置老师不受影响）。 */
+export function resetPublishedTeachers(): void {
+  writeAll([]);
+}

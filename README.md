@@ -13,11 +13,11 @@
 
 ## 🧭 三端一览
 
-| 端 | 入口 | 主要页面 |
-| --- | --- | --- |
-| **学生端** | `/` | 首页、老师库 `/teachers`、老师详情 `/teachers/$id`、AI 对练 `/chat/$teacherId`、预约 1v1 `/booking/$teacherId`、评估报告 `/report/$sessionId`、个人中心 `/me`、成长追踪 `/growth` |
-| **老师端** | `/teacher` | 工作台、数据分析 `analytics`、AI 分身 `avatar`、收益 `earnings`、学员 `students`、服务定价 `pricing`、排期 `schedule` |
-| **管理后台** | `/admin` | 总览、用户 `users`、审核 `review`、合规 `compliance`、支付 `payments`、内容 `content`、培训 `training` |
+| 端           | 入口       | 主要页面                                                                                                                                                                          |
+| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **学生端**   | `/`        | 首页、老师库 `/teachers`、老师详情 `/teachers/$id`、AI 对练 `/chat/$teacherId`、预约 1v1 `/booking/$teacherId`、评估报告 `/report/$sessionId`、个人中心 `/me`、成长追踪 `/growth` |
+| **老师端**   | `/teacher` | 工作台、数据分析 `analytics`、AI 分身 `avatar`、收益 `earnings`、学员 `students`、服务定价 `pricing`、排期 `schedule`                                                             |
+| **管理后台** | `/admin`   | 总览、用户 `users`、审核 `review`、合规 `compliance`、支付 `payments`、内容 `content`、培训 `training`                                                                            |
 
 > 本仓库目前使用 `src/mock/*` 提供 Mock 数据,后端接口接入后逐步替换。
 
@@ -72,16 +72,16 @@ src/
 
 本项目使用 **TanStack Router 文件路由**,目录下每个 `.tsx` 即一个路由。请勿创建 `src/pages/`、`src/routes/_app/index.tsx` 或 `app/layout.tsx` 等 Next.js / Remix 风格目录 —— 唯一的根布局是 `src/routes/__root.tsx`。
 
-| 文件 | URL |
-| --- | --- |
-| `index.tsx` | `/` |
-| `about.tsx` | `/about` |
-| `teachers/index.tsx` | `/teachers` |
-| `teachers/$id.tsx` | `/teachers/:id`(动态段,直接用 `$`,不要花括号) |
-| `posts/{-$category}.tsx` | `/posts/:category?`(可选段) |
-| `files/$.tsx` | `/files/*`(splat 段,用 `_splat` 读取,不要用 `*`) |
-| `_layout.tsx` | 布局路由,通过 `<Outlet />` 渲染子路由 |
-| `__root.tsx` | 应用外壳,包裹所有页面 —— 请保留 `<Outlet />` |
+| 文件                     | URL                                              |
+| ------------------------ | ------------------------------------------------ |
+| `index.tsx`              | `/`                                              |
+| `about.tsx`              | `/about`                                         |
+| `teachers/index.tsx`     | `/teachers`                                      |
+| `teachers/$id.tsx`       | `/teachers/:id`(动态段,直接用 `$`,不要花括号)    |
+| `posts/{-$category}.tsx` | `/posts/:category?`(可选段)                      |
+| `files/$.tsx`            | `/files/*`(splat 段,用 `_splat` 读取,不要用 `*`) |
+| `_layout.tsx`            | 布局路由,通过 `<Outlet />` 渲染子路由            |
+| `__root.tsx`             | 应用外壳,包裹所有页面 —— 请保留 `<Outlet />`     |
 
 > `src/routeTree.gen.ts` 为自动生成,请勿手动编辑。
 
@@ -97,11 +97,11 @@ src/
 
 ### 改动安全分级
 
-| 级别 | 范围 |
-| --- | --- |
-| ✅ **随便改** | `src/routes/**`、`src/components/**`、`src/mock/**`、`src/hooks/**`、`src/lib/**`(非 lovable)、`src/styles.css`、文档 |
-| ⚠️ **小心** | `package.json` 依赖版本、`vite.config.ts`、`bunfig.toml` 里的 `@lovable.dev/*` 排除项 —— 改完务必本地 `bun run build` 验证 |
-| 🚫 **别碰** | `.lovable/` 目录、`@lovable.dev/vite-tanstack-config` 依赖、`AGENTS.md` 的 `LOVABLE:BEGIN/END` 块、已推送的 Git 历史 |
+| 级别          | 范围                                                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| ✅ **随便改** | `src/routes/**`、`src/components/**`、`src/mock/**`、`src/hooks/**`、`src/lib/**`(非 lovable)、`src/styles.css`、文档      |
+| ⚠️ **小心**   | `package.json` 依赖版本、`vite.config.ts`、`bunfig.toml` 里的 `@lovable.dev/*` 排除项 —— 改完务必本地 `bun run build` 验证 |
+| 🚫 **别碰**   | `.lovable/` 目录、`@lovable.dev/vite-tanstack-config` 依赖、`AGENTS.md` 的 `LOVABLE:BEGIN/END` 块、已推送的 Git 历史       |
 
 ### 新增页面 / 功能
 

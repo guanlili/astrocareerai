@@ -24,7 +24,8 @@ function appliesToHit(node: QuestionNode, session: InterviewSession): boolean {
   const a = node.appliesTo;
   if (!a) return false;
   const company = (session.setup.companyName ?? "").toLowerCase();
-  const roleHay = `${session.setup.roleTitle ?? ""} ${session.setup.jobDescription ?? ""}`.toLowerCase();
+  const roleHay =
+    `${session.setup.roleTitle ?? ""} ${session.setup.jobDescription ?? ""}`.toLowerCase();
   const companyHit =
     company.length > 0 &&
     (a.companies ?? []).some((c) => {
@@ -71,8 +72,7 @@ export function selectNextQuestion(
   // 维度未覆盖者优先（押题命中与维度补全共用此排序）
   const byUncoveredDim = (arr: QuestionNode[]) =>
     [...arr].sort(
-      (a, b) =>
-        (coveredDims.has(a.dimension) ? 1 : 0) - (coveredDims.has(b.dimension) ? 1 : 0),
+      (a, b) => (coveredDims.has(a.dimension) ? 1 : 0) - (coveredDims.has(b.dimension) ? 1 : 0),
     );
 
   // 2. 押题匹配

@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LocaleProvider } from "@/i18n/context";
+import { Toaster } from "@/components/ui/sonner";
+import { hydrateMockStore } from "@/mock/store";
 
 function NotFoundComponent() {
   return (
@@ -79,17 +81,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "Exact Screenshot captures and displays precise screenshots." },
+      {
+        name: "description",
+        content: "Exact Screenshot captures and displays precise screenshots.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Exact Screenshot captures and displays precise screenshots." },
+      {
+        property: "og:description",
+        content: "Exact Screenshot captures and displays precise screenshots.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Exact Screenshot captures and displays precise screenshots." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/09db2653-50af-4c61-9fc5-4ab7aa274de1/id-preview-2d26717e--7e25191e-8646-4c85-9f5d-d428ccb2d93d.lovable.app-1781801002783.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/09db2653-50af-4c61-9fc5-4ab7aa274de1/id-preview-2d26717e--7e25191e-8646-4c85-9f5d-d428ccb2d93d.lovable.app-1781801002783.png" },
+      {
+        name: "twitter:description",
+        content: "Exact Screenshot captures and displays precise screenshots.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/09db2653-50af-4c61-9fc5-4ab7aa274de1/id-preview-2d26717e--7e25191e-8646-4c85-9f5d-d428ccb2d93d.lovable.app-1781801002783.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/09db2653-50af-4c61-9fc5-4ab7aa274de1/id-preview-2d26717e--7e25191e-8646-4c85-9f5d-d428ccb2d93d.lovable.app-1781801002783.png",
+      },
     ],
     links: [
       {
@@ -121,12 +140,19 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // 客户端挂载后：把 localStorage 中的可变 Mock 状态灌进反应式 store（SSR 安全，
+  // 首帧仍渲染确定性种子）。与 LocaleProvider 的纠正时机一致。
+  useEffect(() => {
+    hydrateMockStore();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </LocaleProvider>
+      <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
 }

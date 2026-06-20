@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { TeacherShell } from "@/components/layouts/TeacherShell";
 import { KpiCard, SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { KvRow } from "@/components/common/KvRow";
 import { dashboardKpis, students, teacherDailyConversations } from "@/mock/platform";
 import { getPublishedTeachers } from "@/mock/teacherRegistry";
 import { getStudio, type StudioState } from "@/mock/teacherStudio";
+import { useMockState, teacherEarnings } from "@/mock/store";
 import {
   Bar,
   BarChart,
@@ -36,6 +38,9 @@ function TeacherHome() {
     setStudio(getStudio());
     setPublishedCount(getPublishedTeachers().length);
   }, []);
+
+  // 本月成交(净)：来自统一 Mock store 的真实订单（陈昊）派生，SSR 安全
+  const netEarnings = teacherEarnings(useMockState(), "陈昊").net;
 
   const highIntent = students.filter((s) => s.intent === "high").length;
   const scheduleBooked = studio?.schedule.booked.length ?? null;
@@ -101,7 +106,10 @@ function TeacherHome() {
                       {s.note && ` · ${s.note}`}
                     </div>
                   </div>
-                  <button className="rounded-md gradient-primary px-3 py-1.5 text-xs text-primary-foreground">
+                  <button
+                    onClick={() => toast(`已加入联系队列，将通过站内信通知 ${s.name}`)}
+                    className="rounded-md gradient-primary px-3 py-1.5 text-xs text-primary-foreground"
+                  >
                     主动联系
                   </button>
                 </div>
@@ -132,10 +140,12 @@ function TeacherHome() {
         </div>
 
         <div className="glass-panel rounded-xl p-6">
-          <SectionTitle title="本月收益" />
-          <div className="font-mono text-4xl font-semibold text-gold">¥48,260</div>
+          <SectionTitle title="本月成交(净)" desc="扣除平台佣金与退款 · 来自实时订单" />
+          <div className="font-mono text-4xl font-semibold text-gold">
+            ¥{netEarnings.toLocaleString()}
+          </div>
           <div className="mt-1 font-mono text-xs text-muted-foreground">
-            较上月 +22% · 平台分成 30%
+            平台分成 15% · 实时派生自订单
           </div>
           <div className="mt-4 space-y-2">
             <Bar2 label="AI 订阅" value={26800} max={50000} />

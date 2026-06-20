@@ -15,10 +15,7 @@ import {
 export const PROMPT_VERSION = "interview-prompt-v1";
 
 /** 语言决策顺序：setup.language > style.language > 系统默认（§5.5）。 */
-export function resolveLanguage(
-  config: TeacherAvatarConfig,
-  setup: InterviewSetup,
-): LanguageMode {
+export function resolveLanguage(config: TeacherAvatarConfig, setup: InterviewSetup): LanguageMode {
   return setup.language ?? config.style.language ?? DEFAULT_LANGUAGE;
 }
 
@@ -26,10 +23,7 @@ const orDefault = (v: string | undefined, fallback: string) =>
   v && v.trim() ? v.trim() : fallback;
 
 /** §6.1 主持提示词骨架 + 注入槽。每轮稳定不变的部分。 */
-export function buildSystemPrompt(
-  config: TeacherAvatarConfig,
-  setup: InterviewSetup,
-): string {
+export function buildSystemPrompt(config: TeacherAvatarConfig, setup: InterviewSetup): string {
   const { persona, skills, style, guardrails } = config;
   const lang = resolveLanguage(config, setup);
   const catchphrases = style.catchphrases?.length
@@ -58,11 +52,11 @@ ${persona.background}
 且候选人在关注点中提及，否则不要纠正候选人的语言选择。
 
 【本次面试上下文】
-目标公司：${orDefault(setup.companyName, '未指定（按通用大厂标准）')}
-目标岗位：${orDefault(setup.roleTitle, '未指定')}
-岗位 JD：${orDefault(setup.jobDescription, '未提供')}
-候选人简历：${orDefault(setup.resume, '未提供，请在开场说明并按通用情况进行')}
-候选人特别希望你关注 / 训练的点（重要）：${orDefault(setup.customFocus, '无特别说明')}
+目标公司：${orDefault(setup.companyName, "未指定（按通用大厂标准）")}
+目标岗位：${orDefault(setup.roleTitle, "未指定")}
+岗位 JD：${orDefault(setup.jobDescription, "未提供")}
+候选人简历：${orDefault(setup.resume, "未提供，请在开场说明并按通用情况进行")}
+候选人特别希望你关注 / 训练的点（重要）：${orDefault(setup.customFocus, "无特别说明")}
 难度：${setup.difficulty ?? "standard"}
 
 【你必须遵守的主持规则】
@@ -137,10 +131,7 @@ export function renderDirective(d: TurnDirective): string {
 }
 
 /** §6.2 最终报告生成提示词（WRAPUP → REPORT）。 */
-export function buildReportPrompt(
-  config: TeacherAvatarConfig,
-  setup: InterviewSetup,
-): string {
+export function buildReportPrompt(config: TeacherAvatarConfig, setup: InterviewSetup): string {
   const lang = resolveLanguage(config, setup);
   const rubric = config.knowledge.rubric
     .map((r) => `${r.id}（${r.name}，权重 ${r.weight}）`)
