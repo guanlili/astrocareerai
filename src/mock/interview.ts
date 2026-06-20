@@ -15,6 +15,7 @@ import type {
   TeacherAvatarConfig,
 } from "@/agent/interview/types";
 import { getTeacher } from "./teachers";
+import { getPublishedConfig } from "./teacherRegistry";
 
 // ──────────────────────────────────────────────────────────────────────────
 // 评分维度（rubric）—— 六维，加权得总分，驱动报告雷达图
@@ -305,9 +306,12 @@ export function buildTeacherConfig(teacherId: string): TeacherAvatarConfig {
   };
 }
 
-/** 本期 Mock 配置来源；未来替换为后台拉取，聊天室与编排器无需改动（§8.1）。 */
+/**
+ * 本期 Mock 配置来源；未来替换为后台拉取，聊天室与编排器无需改动（§8.1）。
+ * 优先返回「老师配置平台」运行期发布的配置，否则用内置 buildTeacherConfig。
+ */
 export class MockTeacherConfigProvider implements TeacherConfigProvider {
   async getConfig(teacherId: string): Promise<TeacherAvatarConfig> {
-    return buildTeacherConfig(teacherId);
+    return getPublishedConfig(teacherId) ?? buildTeacherConfig(teacherId);
   }
 }

@@ -1,4 +1,6 @@
 // 老师 mock 数据
+import { getPublishedProfile } from "./teacherRegistry";
+
 export type Teacher = {
   id: string;
   name: string;
@@ -151,4 +153,6 @@ export const teachers: Teacher[] = [
   },
 ];
 
-export const getTeacher = (id: string) => teachers.find((t) => t.id === id);
+// 先查内置老师，再回退到「老师配置平台」运行期发布的老师（仅客户端可解析，§8.1）。
+export const getTeacher = (id: string): Teacher | undefined =>
+  teachers.find((t) => t.id === id) ?? getPublishedProfile(id);
