@@ -71,7 +71,7 @@ const langFromMode = (m?: LanguageMode): LangChoice =>
 type Difficulty = "warmup" | "standard" | "stress";
 
 function ChatPage() {
-  const { teacher: t } = Route.useLoaderData();
+  const t = getTeacher(Route.useParams().teacherId)!; // 同上，参数名为 teacherId
   const t9n = useT();
   const navigate = useNavigate();
 

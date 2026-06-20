@@ -39,7 +39,7 @@ const reviews = [
 ];
 
 function TeacherDetail() {
-  const { teacher: t } = Route.useLoaderData();
+  const t = getTeacher(Route.useParams().id)!; // loader 已 notFound 兜底，渲染期必存在
 
   return (
     <StudentShell>
