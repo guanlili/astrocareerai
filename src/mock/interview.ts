@@ -103,6 +103,86 @@ export const PM_QUESTION_BANK: QuestionNode[] = [
   },
 ];
 
+// ──────────────────────────────────────────────────────────────────────────
+// 题库：t-007 以酪（运营 / 市场营销）—— 增长 / 投放 / campaign 方向
+// ──────────────────────────────────────────────────────────────────────────
+
+export const OPS_RUBRIC: RubricDimension[] = [
+  { id: "expression", name: "表达逻辑", weight: 2 },
+  { id: "growth", name: "增长策略", weight: 3 },
+  { id: "data", name: "数据驱动", weight: 2 },
+  { id: "creativity", name: "创意策划", weight: 2 },
+  { id: "execution", name: "落地执行", weight: 1 },
+  { id: "overall", name: "整体印象", weight: 1 },
+];
+
+export const OPS_QUESTION_BANK: QuestionNode[] = [
+  {
+    id: "ops-intro",
+    topic: "自我介绍",
+    dimension: "expression",
+    difficulty: "warmup",
+    prompt:
+      "用 90 秒做个自我介绍，重点讲一个你最有代表性的运营 / 增长项目，说清楚你负责什么、拿到了什么结果。",
+    followUps: [
+      "你说的『增长』，是拉新驱动还是留存驱动？用什么口径量化的？",
+      "这个项目里，哪一部分是你个人撬动的，哪一部分是大盘红利？",
+    ],
+  },
+  {
+    id: "ops-coldstart",
+    topic: "冷启动",
+    dimension: "growth",
+    difficulty: "standard",
+    prompt:
+      "给你一个全新功能要做冷启动，预算有限。你会怎么从 0 跑出第一批种子用户？先讲框架，再讲第一步。",
+    followUps: ["你怎么判断当前阶段该堆量还是堆质？", "第一批用户留不下来，你会先改产品还是先改运营？"],
+    appliesTo: { roleKeywords: ["运营", "增长", "拉新", "留存", "growth"] },
+  },
+  {
+    id: "ops-data",
+    topic: "效果衡量",
+    dimension: "data",
+    difficulty: "standard",
+    prompt:
+      "你怎么判断一次运营活动到底有没有效？别只给我看 GMV，告诉我你会盯哪几个指标、为什么。",
+    followUps: ["如果指标涨了，但其实是节日大盘红利，你怎么把你的增量剥离出来？"],
+  },
+  {
+    id: "ops-campaign",
+    topic: "campaign 策划",
+    dimension: "creativity",
+    difficulty: "standard",
+    prompt:
+      "让你用有限预算策划一次有机会刷屏的 campaign，你的核心 hook 是什么？为什么用户会愿意自发传播？",
+    followUps: ["如果上线 24 小时数据远不及预期，你接下来 48 小时怎么救？"],
+    appliesTo: { roleKeywords: ["营销", "市场", "campaign", "内容", "投放", "品牌"] },
+  },
+  {
+    id: "ops-execution",
+    topic: "落地应变",
+    dimension: "execution",
+    difficulty: "stress",
+    prompt:
+      "活动上线前一天，核心资源方临时鸽了，预算也砍了三成。你怎么办？给我一个能在今天内启动的方案。",
+  },
+  {
+    id: "ops-fit",
+    topic: "动机匹配",
+    dimension: "overall",
+    difficulty: "standard",
+    prompt: "为什么是运营 / 市场这条路？你觉得自己最强和最欠缺的分别是什么？",
+    appliesTo: { roleKeywords: ["运营", "市场", "经理", "增长"] },
+  },
+  {
+    id: "ops-close",
+    topic: "反问环节",
+    dimension: "overall",
+    difficulty: "standard",
+    prompt: "最后，你有什么想问我的？",
+  },
+];
+
 // 通用降级题库：简历 / JD 全空时仍可开场，覆盖六维、不绑定任何公司或岗位。
 export const GENERIC_QUESTION_BANK: QuestionNode[] = [
   {
@@ -162,7 +242,18 @@ export const TEACHER_LANGUAGE_DEFAULTS: Record<string, LanguageMode> = {
   "t-004": { primary: "zh", mixing: "heavy" }, // FAANG 系统设计，中英自由切换
   "t-005": { primary: "zh", mixing: "light" }, // 快消管培生，中文
   "t-006": { primary: "zh", mixing: "light" }, // HR 面，中文
+  "t-007": { primary: "zh", mixing: "light" }, // 运营 / 市场，中文为主
 };
+
+// 各老师的知识库（题库 + rubric）；未配置者走通用题库。
+function pickKnowledge(teacherId: string): {
+  questionBank: QuestionNode[];
+  rubric: RubricDimension[];
+} {
+  if (teacherId === "t-001") return { questionBank: PM_QUESTION_BANK, rubric: PM_RUBRIC };
+  if (teacherId === "t-007") return { questionBank: OPS_QUESTION_BANK, rubric: OPS_RUBRIC };
+  return { questionBank: GENERIC_QUESTION_BANK, rubric: PM_RUBRIC };
+}
 
 const DEFAULT_TEACHER_LANGUAGE: LanguageMode = { primary: "zh", mixing: "light" };
 
@@ -173,8 +264,7 @@ const DEFAULT_TEACHER_LANGUAGE: LanguageMode = { primary: "zh", mixing: "light" 
 export function buildTeacherConfig(teacherId: string): TeacherAvatarConfig {
   const t = getTeacher(teacherId);
   const language = TEACHER_LANGUAGE_DEFAULTS[teacherId] ?? DEFAULT_TEACHER_LANGUAGE;
-  // t-001 用产品专属题库，其余老师用通用题库（后续各自接入专属题库 / RAG）
-  const questionBank = teacherId === "t-001" ? PM_QUESTION_BANK : GENERIC_QUESTION_BANK;
+  const { questionBank, rubric } = pickKnowledge(teacherId);
 
   return {
     teacherId,
@@ -204,7 +294,7 @@ export function buildTeacherConfig(teacherId: string): TeacherAvatarConfig {
     },
     knowledge: {
       questionBank,
-      rubric: PM_RUBRIC,
+      rubric,
     },
     guardrails: {
       maxQuestions: 6,
