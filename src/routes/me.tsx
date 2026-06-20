@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { StudentShell } from "@/components/layouts/StudentShell";
 import { StatusBadge } from "@/components/common/PanelKit";
-import { useAppState, refundBooking, bookingToOrder } from "@/mock/appStore";
+import { useAppState, refundBooking, bookingToOrder, setSubscription } from "@/mock/appStore";
 import { getTeacher } from "@/mock/teachers";
 
 export const Route = createFileRoute("/me")({
@@ -34,6 +34,18 @@ function Me() {
   const history = useMemo(
     () => [...st.sessions].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)),
     [st.sessions],
+  );
+
+  // 订阅：从 appStore.subscriptions 派生（管理按钮真切换 active，联动顶部「已订阅 N 位」）
+  const subscribedTeachers = useMemo(
+    () =>
+      st.subscriptions
+        .map((sub) => ({ teacher: getTeacher(sub.teacherId), active: sub.active }))
+        .filter(
+          (x): x is { teacher: NonNullable<ReturnType<typeof getTeacher>>; active: boolean } =>
+            !!x.teacher,
+        ),
+    [st.subscriptions],
   );
 
   return (
@@ -274,23 +286,51 @@ function Me() {
         )}
 
         {tab === "订阅" && (
-          <div className="grid gap-4 md:grid-cols-3">
-            {["陈昊", "苏宁", "Anna Liu"].map((n) => (
-              <div key={n} className="glass-panel rounded-xl p-5">
-                <div className="text-sm text-muted-foreground">AI 分身 · 月订阅</div>
-                <div className="mt-1 font-display text-lg font-semibold">{n}</div>
-                <div className="mt-3 font-mono text-2xl text-gold">¥99/月</div>
-                <div className="mt-2 font-mono text-xs text-muted-foreground">
-                  下次扣费 2026-07-12
-                </div>
-                <button
-                  onClick={() => toast("订阅管理功能演示中")}
-                  className="mt-4 w-full rounded-md border border-border bg-surface/60 py-2 text-sm hover:bg-accent/30"
-                >
-                  管理订阅
-                </button>
+          <div>
+            {subscribedTeachers.length === 0 ? (
+              <div className="glass-panel rounded-xl p-10 text-center text-sm text-muted-foreground">
+                还没有订阅的老师，去{" "}
+                <Link to="/teachers" className="text-primary-glow hover:underline">
+                  找老师
+                </Link>{" "}
+                订阅 AI 分身月度服务
               </div>
-            ))}
+            ) : (
+              <div className="grid gap-4 md:grid-cols-3">
+                {subscribedTeachers.map(({ teacher, active }) => (
+                  <div key={teacher.id} className="glass-panel rounded-xl p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">AI 分身 · 月订阅</div>
+                      <StatusBadge tone={active ? "success" : "neutral"}>
+                        {active ? "订阅中" : "已取消"}
+                      </StatusBadge>
+                    </div>
+                    <div className="mt-1 font-display text-lg font-semibold">{teacher.name}</div>
+                    <div className="mt-3 font-mono text-2xl text-gold">¥99/月</div>
+                    <div className="mt-2 font-mono text-xs text-muted-foreground">
+                      {active ? "下次扣费 2026-07-12" : "已取消 · 本月可用至月底"}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSubscription(teacher.id, !active);
+                        toast.success(active ? "已取消订阅" : "已恢复订阅", {
+                          description: active
+                            ? `${teacher.name} · 次月不再扣费，本月仍可使用`
+                            : `${teacher.name} · 已恢复，次月恢复扣费`,
+                        });
+                      }}
+                      className={`mt-4 w-full rounded-md border py-2 text-sm transition-colors ${
+                        active
+                          ? "border-border bg-surface/60 hover:bg-accent/30"
+                          : "border-primary/40 bg-primary/10 hover:bg-primary/15"
+                      }`}
+                    >
+                      {active ? "取消订阅" : "恢复订阅"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

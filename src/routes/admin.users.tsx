@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { AdminShell } from "@/components/layouts/AdminShell";
 import { KpiCard, SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { Search, Star } from "lucide-react";
 import { adminUserSummary } from "@/mock/platform";
 import { useMockState, type Order } from "@/mock/store";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/admin/users")({
   head: () => ({ meta: [{ title: "用户管理 · 面镜 管理后台" }] }),
@@ -95,6 +101,15 @@ function UsersPage() {
     return { count: teachers.length, avg, refundTotal, highRisk };
   }, [teachers]);
 
+  // 详情抽屉：点用户 / 老师的「详情」打开，展示该对象的真实订单流水
+  const [detail, setDetail] = useState<{ kind: "user" | "teacher"; name: string } | null>(null);
+  const detailOrders = useMemo(() => {
+    if (!detail) return [] as Order[];
+    return st.orders.filter((o) =>
+      detail.kind === "user" ? o.student === detail.name : o.teacher === detail.name,
+    );
+  }, [detail, st.orders]);
+
   // 按搜索关键字 + 筛选芯片派生
   const rows = useMemo(() => {
     const kw = search.trim().toLowerCase();
@@ -110,11 +125,7 @@ function UsersPage() {
     });
   }, [search, filter]);
 
-  const handleDetail = (name: string) => {
-    toast(`用户「${name}」详情（演示）`, {
-      description: "完整画像、订单、会话记录将在正式版本中展示",
-    });
-  };
+  const handleDetail = (name: string) => setDetail({ kind: "user", name });
 
   return (
     <AdminShell title="用户管理" subtitle="学员 / 老师 / 管理员统一视图">
@@ -214,11 +225,7 @@ function UsersPage() {
                       </td>
                       <td className="px-6 py-3">
                         <button
-                          onClick={() =>
-                            toast(`老师「${t.name}」服务质量详情（演示）`, {
-                              description: `${t.total} 单 · 完成 ${t.completed} · 退款 ${t.refunded}（¥${t.refundAmount.toLocaleString()}）· 评分 ${t.rating.toFixed(1)}`,
-                            })
-                          }
+                          onClick={() => setDetail({ kind: "teacher", name: t.name })}
                           className="text-xs text-primary-glow hover:underline"
                         >
                           详情 →
@@ -336,6 +343,55 @@ function UsersPage() {
           </div>
         )}
       </div>
+
+      <Sheet open={detail !== null} onOpenChange={(o) => !o && setDetail(null)}>
+        <SheetContent side="right" className="flex w-full flex-col overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{detail?.name} · 订单记录</SheetTitle>
+            <SheetDescription>
+              {detail?.kind === "user" ? "该学员的历史订单" : "该老师的全部订单流水"} · 来自实时订单
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 space-y-2 px-4 pb-6">
+            {detailOrders.length === 0 ? (
+              <p className="text-sm text-muted-foreground">暂无订单记录</p>
+            ) : (
+              detailOrders.map((o) => (
+                <div
+                  key={o.id}
+                  className="rounded-md border border-border bg-surface/40 p-3 text-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{o.type}</span>
+                    <span className="font-mono text-gold">¥{o.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {detail?.kind === "user" ? o.teacher : o.student}
+                    </span>
+                    <StatusBadge
+                      tone={
+                        o.status === "已完成"
+                          ? "success"
+                          : o.status === "退款" || o.status === "已退款"
+                            ? "danger"
+                            : o.status === "退款中"
+                              ? "warning"
+                              : "info"
+                      }
+                    >
+                      {o.status}
+                    </StatusBadge>
+                  </div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">
+                    {o.id} · {o.date}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </AdminShell>
   );
 }

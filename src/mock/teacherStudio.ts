@@ -6,8 +6,14 @@
 // 注意：localStorage 仅客户端可用，所有读取做 typeof localStorage 兜底（同 teacherRegistry）。
 
 import type { Teacher } from "./teachers";
-import type { LanguageMode, QuestionNode, TeacherAvatarConfig } from "@/agent/interview/types";
-import { PM_RUBRIC } from "./interview";
+import type {
+  HandoffPolicy,
+  HandoffTriggerRule,
+  LanguageMode,
+  QuestionNode,
+  TeacherAvatarConfig,
+} from "@/agent/interview/types";
+import { PM_RUBRIC, DEFAULT_HANDOFF_THRESHOLD } from "./interview";
 import { getPublishedProfile, publishTeacher, unpublishTeacher } from "./teacherRegistry";
 
 export type PublishStatus = "draft" | "published" | "unpublished";
@@ -157,6 +163,30 @@ export function rebuildQuestionBank(prompts: string[], idPrefix: string): Questi
   }));
 }
 
+/**
+ * 把老师后台定价里的 handoffRules（自然语言）解析为 Agent 可消费的结构化策略。
+ * - 从 trigger 文本抽取「」内关键词作为命中词；
+ * - 从「≥ N」抽取 minHits，无则默认 1 次；
+ * - 无「」关键词时回退用整条 trigger 文本兜底（便于演示）。
+ * 这样老师后台改了 handoffRules，发布后 Agent 即按新规则判断转人工。
+ */
+export function handoffPolicyFromRules(rules: HandoffRule[]): HandoffPolicy {
+  return {
+    lowDimThreshold: DEFAULT_HANDOFF_THRESHOLD,
+    rules: rules.map((r) => {
+      const keywords = Array.from(r.trigger.matchAll(/「([^」]+)」/g)).map((m) => m[1]);
+      const hitMatch = r.trigger.match(/≥\s*(\d+)/);
+      return {
+        id: r.id,
+        keywords: keywords.length ? keywords : [r.trigger],
+        minHits: hitMatch ? Number(hitMatch[1]) : 1,
+        action: r.action,
+        enabled: r.enabled,
+      } satisfies HandoffTriggerRule;
+    }),
+  };
+}
+
 // 默认草稿：沿用旧 publish 页 SAMPLE（周衡 UX 设计师）+ pricing/schedule 旧硬编码值作种子
 export function defaultStudio(): StudioState {
   const id = "pub-ux01";
@@ -193,6 +223,9 @@ export function defaultStudio(): StudioState {
     packagePrice: startingPrice * 28,
   };
 
+  // 转人工策略：由老师后台 handoffRules 映射而来，让 Agent 真正消费老师定义的触发条件
+  const pricing = defaultPricing();
+
   const config: TeacherAvatarConfig = {
     teacherId: id,
     version: "studio-seed",
@@ -215,12 +248,13 @@ export function defaultStudio(): StudioState {
       targetDurationMax: 45,
       stayInScope: true,
     },
+    handoff: handoffPolicyFromRules(pricing.handoffRules),
   };
 
   return {
     profile,
     config,
-    pricing: defaultPricing(),
+    pricing,
     schedule: defaultSchedule(),
     materials: defaultMaterials(),
     status: "draft",

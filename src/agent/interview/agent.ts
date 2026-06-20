@@ -39,6 +39,9 @@ import type {
 /** 单回合有效用时上限：超过即视为思考 / 挂机，只计上限，避免刷满时长（§7.8.3）。 */
 const MAX_TURN_MS = 5 * 60_000;
 
+/** 追问触发线：上一答分数低于此值则深挖追问，高于则切换未覆盖维度（§7.4 动态追问）。 */
+const FOLLOW_UP_THRESHOLD = 72;
+
 export type MockInterviewAgentDeps = {
   configProvider: TeacherConfigProvider;
   model: ModelClient;
@@ -178,8 +181,11 @@ export class MockInterviewAgent implements InterviewClient {
     const maxMs = config.guardrails.targetDurationMax * 60_000;
     const wrapUp = askedCount >= maxQ || session.elapsedMs + elapsedAdd >= maxMs;
 
-    // 选下一题（非收尾时）。第 1 次作答后倾向追问，保证「动态追问」体感（§7.4）。
-    const selection = wrapUp ? null : selectNextQuestion(config, session, askedCount === 1);
+    // 选下一题（非收尾时）。是否追问由「上一答分数」驱动：低分深挖、高分换维度（§7.4）。
+    // 首答尚无历史反馈时兜底给一次追问体感（askedCount === 1）。
+    const lastScore = this.collectFeedback(session).at(-1)?.score;
+    const preferFollowUp = lastScore == null ? askedCount === 1 : lastScore < FOLLOW_UP_THRESHOLD;
+    const selection = wrapUp ? null : selectNextQuestion(config, session, preferFollowUp);
 
     const directive: TurnDirective = {
       phase: wrapUp ? "WRAPUP" : "FEEDBACK_THEN_QUESTION",
@@ -455,9 +461,28 @@ export class MockInterviewAgent implements InterviewClient {
         })
       : undefined;
 
-    // §9 转化触发：模型建议 或 关键维度持续偏低
-    const lowDim = dimensions.some((d) => d.score < 55);
-    const handoffRecommended = parsed?.handoffRecommended === true || lowDim;
+    // §9 转化触发：模型建议 或 关键维度持续偏低 或 命中老师自定义转人工规则
+    const policy = config.handoff;
+    const threshold = policy?.lowDimThreshold ?? 55;
+    const lowDim = dimensions.some((d) => d.score < threshold);
+    // 扫描候选人全部发言，累计命中老师后台定义的关键词规则
+    const userCorpus = session.messages
+      .filter((m) => m.role === "user")
+      .map((m) => m.content)
+      .join("\n");
+    const ruleTriggered = (policy?.rules ?? []).some((rule) => {
+      if (!rule.enabled) return false;
+      let hits = 0;
+      for (const kw of rule.keywords) {
+        let idx = userCorpus.indexOf(kw);
+        while (idx !== -1) {
+          hits += 1;
+          idx = userCorpus.indexOf(kw, idx + kw.length);
+        }
+      }
+      return hits >= rule.minHits;
+    });
+    const handoffRecommended = parsed?.handoffRecommended === true || lowDim || ruleTriggered;
 
     return {
       sessionId: session.id,

@@ -26,6 +26,8 @@ export const Route = createFileRoute("/teacher/analytics")({
 
 const TEACHER_NAME = "陈昊";
 
+// 学员满意度分布（示例数据）：appStore 暂无独立「评价」数据源（sessions.overall 是模拟评分，
+// 不等价于满意度），接入真实评价体系前保持示例，避免用错语义的数据误导。
 const satisfaction = [
   { name: "★★★★★", value: 168 },
   { name: "★★★★", value: 72 },
@@ -96,6 +98,12 @@ function AnalyticsPage() {
         ))}
       </div>
 
+      {settledCount === 0 && (
+        <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
+          本月暂无成交订单 — 顶部 KPI 显示为 0。学员下单或管理端开单后，此处与收益将实时联动。
+        </div>
+      )}
+
       {/* 静态 demo KPI（今日对话/覆盖学员）——平台级聚合，订单 store 无对应数据 */}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {staticKpis.map((k) => (
@@ -134,7 +142,7 @@ function AnalyticsPage() {
         </div>
 
         <div className="glass-panel rounded-xl p-6">
-          <SectionTitle title="学员满意度分布" desc="demo 数据" />
+          <SectionTitle title="学员满意度分布" desc="示例数据 · 接入真实评价后更新" />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

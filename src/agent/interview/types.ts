@@ -65,6 +65,9 @@ export type TeacherAvatarConfig = {
     targetDurationMax: number; // 默认 45
     stayInScope: boolean; // 是否严格限定在 knowledge 范围内（默认 true）
   };
+
+  // —— handoff：转人工策略（本期默认值，未来由老师后台 / 配置中心产出）——
+  handoff?: HandoffPolicy;
 };
 
 /** 结构化题库节点：支持「按上一题动态选择 / 追问」。 */
@@ -86,6 +89,25 @@ export type RubricDimension = {
   id: string; // "expression" | "business" | ...
   name: string; // "表达逻辑"
   weight: number; // 权重，加权得总分
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// §9 转人工策略（本期默认值，未来由老师后台 / 配置中心产出）
+// ──────────────────────────────────────────────────────────────────────────
+
+/** 转人工触发规则：候选人消息累计命中关键词达 minHits 次即触发。 */
+export type HandoffTriggerRule = {
+  id: string;
+  keywords: string[];
+  minHits: number;
+  action: string;
+  enabled: boolean;
+};
+
+/** 转人工策略：低分阈值 + 老师自定义关键词规则，驱动报告 handoffRecommended。 */
+export type HandoffPolicy = {
+  lowDimThreshold: number;
+  rules: HandoffTriggerRule[];
 };
 
 // ──────────────────────────────────────────────────────────────────────────

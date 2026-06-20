@@ -20,7 +20,9 @@ import {
   reviewQueue,
   trainingJobs as platformTraining,
   adminComplianceItems,
+  students as platformStudents,
   type Order as PlatformOrder,
+  type Student,
 } from "./platform";
 import { resetStudio } from "./teacherStudio";
 import { resetPublishedTeachers } from "./teacherRegistry";
@@ -587,6 +589,37 @@ export function refundBooking(id: string): void {
 /** 某老师的订单（按姓名匹配，兼容种子数据）。 */
 export function ordersForTeacher(state: AppState, teacherName: string): Order[] {
   return state.orders.filter((o) => o.teacher === teacherName);
+}
+
+/** 学员头像（与 platform.students 风格一致，用于合成新学员条目）。 */
+const studentAvatar = (seedName: string) =>
+  `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(seedName)}`;
+
+/**
+ * 某老师的学员名单：以 platform 静态学员为基础（陈昊视角演示数据），
+ * 合并订单 / 预约里出现的新学员（按姓名去重），让学生新下单能实时出现在老师学员列表。
+ * 其余老师的学员仅来自订单反推（无静态演示数据）。
+ */
+export function studentsForTeacher(state: AppState, teacherName: string): Student[] {
+  const base = teacherName === "陈昊" ? platformStudents : [];
+  const known = new Set(base.map((s) => s.name));
+  const fromOrders = [...new Set(ordersForTeacher(state, teacherName).map((o) => o.student))];
+  const merged = [...base];
+  fromOrders.forEach((name, i) => {
+    if (!known.has(name)) {
+      merged.push({
+        id: `S-${teacherName}-${i}`,
+        name,
+        avatar: studentAvatar(name),
+        rounds: 0,
+        lastActive: "刚刚",
+        intent: "medium",
+        paid: true,
+        note: "新预约学员",
+      });
+    }
+  });
+  return merged;
 }
 
 /** 平台抽佣比例（聚合 fee 与收益页逐行 fee 共用此常量，保证两者一致）。 */

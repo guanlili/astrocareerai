@@ -38,6 +38,52 @@ export function safeParseJSON<T = unknown>(raw: string): T | null {
 // StubModelClient —— 纯逻辑打桩
 // ──────────────────────────────────────────────────────────────────────────
 
+// renderDirective 会把当前考察维度写进 system（「考察维度：「<id>」」），
+// Stub 据此确定性抖动分数，让六维雷达 / 动态追问 / 转人工在无真实模型时也可演示。
+// 真实模型接入后本表失效（由模型按回答内容评分），此处仅占位。
+const DIM_SCORE: Record<string, number> = {
+  expression: 84,
+  business: 76,
+  data: 66,
+  pressure: 62,
+  fit: 80,
+  overall: 79,
+  growth: 68,
+  creativity: 77,
+  execution: 64,
+};
+
+const DIM_FEEDBACK: Record<
+  string,
+  { strengths: string[]; improvements: string[]; comment: string }
+> = {
+  data: {
+    strengths: ["给出了量化口径"],
+    improvements: ["归因方法可以更严谨", "需剥离自然增长的影响"],
+    comment: "数据意识不错，但口径与归因需更严谨。",
+  },
+  pressure: {
+    strengths: ["没有回避问题"],
+    improvements: ["结论不够果断", "压力下表达发散"],
+    comment: "压力题下略显发散，建议先给结论再展开。",
+  },
+  expression: {
+    strengths: ["结构清晰", "表达流畅"],
+    improvements: ["可更精炼"],
+    comment: "表达有条理，继续保持结论先行。",
+  },
+  business: {
+    strengths: ["有结构", "举了具体例子"],
+    improvements: ["数据口径可更清晰"],
+    comment: "整体思路清晰，建议补充量化口径。",
+  },
+};
+
+function dimFromSystem(system: string): string {
+  const m = system.match(/考察维度：「([a-z_]+)」/);
+  return m ? m[1] : "business";
+}
+
 /**
  * 规则化打桩：根据 system / messages 判断当前是开场、答题回合还是报告生成，
  * 返回结构合法的固定 JSON。便于在无网络下断言状态机 / 选题 / guardrail / 报告聚合。
@@ -92,17 +138,19 @@ export class StubModelClient implements ModelClient {
       });
     }
 
-    // 普通答题回合：反馈 + 下一题
+    // 普通答题回合：反馈 + 下一题（按考察维度确定性抖动分数，让六维 / 追问 / 转人工可演示）
+    const dim = dimFromSystem(input.system);
+    const fb = DIM_FEEDBACK[dim];
     return JSON.stringify({
       phase: "FEEDBACK_THEN_QUESTION",
       say: "我先简单点评一下你刚才的回答，然后我们继续下一个问题。",
       questionId: null,
-      dimension: "business",
+      dimension: dim,
       feedback: {
-        score: 75,
-        strengths: ["有结构", "举了具体例子"],
-        improvements: ["数据口径可更清晰"],
-        oneLineComment: "整体思路清晰，建议补充量化口径。",
+        score: DIM_SCORE[dim] ?? 75,
+        strengths: fb?.strengths ?? ["有结构", "举了具体例子"],
+        improvements: fb?.improvements ?? ["数据口径可更清晰"],
+        oneLineComment: fb?.comment ?? "整体思路清晰，建议补充量化口径。",
       },
     });
   }

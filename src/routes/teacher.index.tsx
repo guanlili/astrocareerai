@@ -4,10 +4,11 @@ import { toast } from "sonner";
 import { TeacherShell } from "@/components/layouts/TeacherShell";
 import { KpiCard, SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { KvRow } from "@/components/common/KvRow";
-import { dashboardKpis, students, teacherDailyConversations } from "@/mock/platform";
+import { dashboardKpis, teacherDailyConversations } from "@/mock/platform";
 import { getPublishedTeachers } from "@/mock/teacherRegistry";
 import { getStudio, type StudioState } from "@/mock/teacherStudio";
-import { useMockState, teacherEarnings } from "@/mock/store";
+import { useMockState, teacherEarnings, ordersForTeacher, studentsForTeacher } from "@/mock/store";
+import { getOverlay, setOverlay } from "@/mock/studentNotes";
 import {
   Bar,
   BarChart,
@@ -39,14 +40,32 @@ function TeacherHome() {
     setPublishedCount(getPublishedTeachers().length);
   }, []);
 
-  // 本月成交(净)：来自统一 Mock store 的真实订单（陈昊）派生，SSR 安全
-  const netEarnings = teacherEarnings(useMockState(), "陈昊").net;
+  // 收益 / 学员均来自统一 Mock store 的真实订单派生（陈昊），SSR 安全
+  const st = useMockState();
+  const netEarnings = teacherEarnings(st, "陈昊").net;
 
-  const highIntent = students.filter((s) => s.intent === "high").length;
+  // 收益按订单类型分组（替换原写死的 26800/15400/6060，避免与净收益自相矛盾）
+  const settledMine = ordersForTeacher(st, "陈昊").filter(
+    (o) => o.status === "已支付" || o.status === "已完成",
+  );
+  const sumByType = (t: string) =>
+    settledMine.filter((o) => o.type === t).reduce((s, o) => s + o.amount, 0);
+  const revAiSub = sumByType("订阅");
+  const revV1 = sumByType("1v1辅导");
+  const revPkg = sumByType("Package");
+  const revMax = Math.max(revAiSub, revV1, revPkg, 1);
+
+  // 学员名单：静态演示学员 + 订单反推的新学员（学生新预约实时出现）
+  const myStudents = studentsForTeacher(st, "陈昊");
+  // 已联系标记：初始从 overlay 读，点击后本地更新 + 持久化（与 teacher.students 行为一致）
+  const [contacted, setContacted] = useState<Set<string>>(
+    () => new Set(myStudents.filter((s) => getOverlay(s.id).contacted).map((s) => s.id)),
+  );
+  const highIntent = myStudents.filter((s) => s.intent === "high").length;
   const scheduleBooked = studio?.schedule.booked.length ?? null;
   const enabledRules = studio?.pricing.handoffRules.filter((r) => r.enabled).length ?? null;
 
-  // KPI 第 3 项「高意向学员」由真实 students 派生
+  // KPI 第 3 项「高意向学员」由真实学员名单派生
   const kpis = dashboardKpis.teacher.map((k, i) =>
     i === 2 ? { ...k, value: String(highIntent) } : k,
   );
@@ -89,7 +108,7 @@ function TeacherHome() {
         <div className="glass-panel rounded-xl p-6">
           <SectionTitle title="高意向学员" desc="对话频次或付费意向高的学员" />
           <div className="space-y-3">
-            {students
+            {myStudents
               .filter((s) => s.intent === "high")
               .map((s) => (
                 <div
@@ -106,12 +125,20 @@ function TeacherHome() {
                       {s.note && ` · ${s.note}`}
                     </div>
                   </div>
-                  <button
-                    onClick={() => toast(`已加入联系队列，将通过站内信通知 ${s.name}`)}
-                    className="rounded-md gradient-primary px-3 py-1.5 text-xs text-primary-foreground"
-                  >
-                    主动联系
-                  </button>
+                  {contacted.has(s.id) ? (
+                    <StatusBadge tone="success">已联系</StatusBadge>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setOverlay(s.id, { contacted: true });
+                        setContacted((prev) => new Set(prev).add(s.id));
+                        toast.success("已记录主动联系", { description: `${s.name} · 老师将跟进` });
+                      }}
+                      className="rounded-md gradient-primary px-3 py-1.5 text-xs text-primary-foreground"
+                    >
+                      主动联系
+                    </button>
+                  )}
                 </div>
               ))}
           </div>
@@ -148,9 +175,9 @@ function TeacherHome() {
             平台分成 15% · 实时派生自订单
           </div>
           <div className="mt-4 space-y-2">
-            <Bar2 label="AI 订阅" value={26800} max={50000} />
-            <Bar2 label="1v1 辅导" value={15400} max={50000} />
-            <Bar2 label="Package" value={6060} max={50000} />
+            <Bar2 label="AI 订阅" value={revAiSub} max={revMax} />
+            <Bar2 label="1v1 辅导" value={revV1} max={revMax} />
+            <Bar2 label="Package" value={revPkg} max={revMax} />
           </div>
         </div>
 
