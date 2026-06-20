@@ -8,7 +8,7 @@
 import type { ModelClient } from "@/agent/interview/contracts";
 import type { ChatMsg } from "@/agent/interview/types";
 import { StubModelClient } from "@/agent/interview/model";
-import { llmComplete } from "./llm";
+import { llmComplete } from "./endpoints";
 
 export class ServerModelClient implements ModelClient {
   // 便于事件日志读取 model 名（仅展示用）

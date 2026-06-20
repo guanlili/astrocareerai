@@ -4,13 +4,14 @@ import { getTeacher } from "@/mock/teachers";
 import type { ChatMsg } from "@/mock/sessions";
 import {
   MockInterviewAgent,
-  StubModelClient,
   LocalSessionStore,
   type InterviewSession,
   type InterviewSetup,
   type LanguageMode,
 } from "@/agent/interview";
 import { MockTeacherConfigProvider, buildTeacherConfig } from "@/mock/interview";
+import { FallbackModelClient, ServerModelClient } from "@/llm/clients";
+import { llmStatus } from "@/llm/endpoints";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { PerspectiveSwitcher } from "@/components/layouts/PerspectiveSwitcher";
 import { LanguageSwitcher } from "@/i18n/LanguageSwitcher";
@@ -75,17 +76,25 @@ function ChatPage() {
   const t9n = useT();
   const navigate = useNavigate();
 
-  // 面试 Agent：本期注入 Stub 模型 + 本地存储；切换真实模型只需替换 model（§7.3）
+  // 面试 Agent：真实模型经服务端代理 Qwen（密钥在服务端），失败回退打桩；本地存储。
   const { agent, store } = useMemo(() => {
     const localStore = new LocalSessionStore();
     return {
       store: localStore,
       agent: new MockInterviewAgent({
         configProvider: new MockTeacherConfigProvider(),
-        model: new StubModelClient(),
+        model: new FallbackModelClient(new ServerModelClient()),
         store: localStore,
       }),
     };
+  }, []);
+
+  // LLM 状态（关键信息已遮蔽），仅用于头部标识
+  const [llm, setLlm] = useState<{ enabled: boolean; model: string; maskedKey: string } | null>(
+    null,
+  );
+  useEffect(() => {
+    llmStatus().then(setLlm).catch(() => setLlm({ enabled: false, model: "", maskedKey: "" }));
   }, []);
 
   const config = useMemo(() => buildTeacherConfig(t.id), [t.id]);
@@ -263,6 +272,19 @@ function ChatPage() {
           {phase === "interview" && (
             <div className="hidden items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] text-foreground md:flex">
               {t9n("progress.questions", { n: askedCount, m: maxQ })}
+            </div>
+          )}
+          {llm && (
+            <div
+              className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] md:flex ${
+                llm.enabled
+                  ? "border-success/40 bg-success/10 text-success"
+                  : "border-border bg-surface/60 text-muted-foreground"
+              }`}
+              title={llm.enabled ? `${llm.model} · ${llm.maskedKey}` : "未配置密钥，使用打桩演示"}
+            >
+              <Sparkles className="h-3 w-3" />
+              {llm.enabled ? `Qwen · ${llm.model}` : "演示模式"}
             </div>
           )}
           <LanguageSwitcher />

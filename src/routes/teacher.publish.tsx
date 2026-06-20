@@ -15,12 +15,23 @@ import {
   type PublishedTeacher,
 } from "@/mock/teacherRegistry";
 import type { Teacher } from "@/mock/teachers";
-import type {
-  LanguageMode,
-  QuestionNode,
-  TeacherAvatarConfig,
+import {
+  safeParseJSON,
+  type LanguageMode,
+  type QuestionNode,
+  type TeacherAvatarConfig,
 } from "@/agent/interview";
-import { Rocket, Trash2, CheckCircle2, ExternalLink, Eye } from "lucide-react";
+import { analyzeTeacherMaterial, llmStatus } from "@/llm/endpoints";
+import {
+  Rocket,
+  Trash2,
+  CheckCircle2,
+  ExternalLink,
+  Eye,
+  Wand2,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/teacher/publish")({
   head: () => ({ meta: [{ title: "分身上架 · 老师配置平台 · 面镜" }] }),
@@ -64,7 +75,60 @@ function PublishPage() {
   const [published, setPublished] = useState<PublishedTeacher[]>([]);
   const [justPublished, setJustPublished] = useState<string | null>(null);
 
+  // AI 素材分析
+  const [material, setMaterial] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeMsg, setAnalyzeMsg] = useState<string | null>(null);
+  const [llm, setLlm] = useState<{ enabled: boolean; model: string; maskedKey: string } | null>(
+    null,
+  );
+
   useEffect(() => setPublished(getPublishedTeachers()), []);
+  useEffect(() => {
+    llmStatus().then(setLlm).catch(() => setLlm({ enabled: false, model: "", maskedKey: "" }));
+  }, []);
+
+  async function onAnalyze() {
+    if (!material.trim() || analyzing) return;
+    setAnalyzing(true);
+    setAnalyzeMsg(null);
+    try {
+      const { raw } = await analyzeTeacherMaterial({ data: { material } });
+      const j = safeParseJSON<{
+        name?: string;
+        title?: string;
+        company?: string;
+        tags?: string[];
+        domains?: string[];
+        background?: string;
+        suggestedQuestions?: string[];
+      }>(raw);
+      if (!j) {
+        setAnalyzeMsg("分析结果解析失败，请重试或手动填写。");
+        return;
+      }
+      setForm((f) => ({
+        ...f,
+        name: j.name || f.name,
+        title: j.title || f.title,
+        company: j.company || f.company,
+        tags: j.tags?.length ? j.tags.join(", ") : f.tags,
+        domains: j.domains?.length ? j.domains.join(", ") : f.domains,
+        background: j.background || f.background,
+        bio: j.background || f.bio,
+        questions: j.suggestedQuestions?.length
+          ? j.suggestedQuestions.join("\n")
+          : f.questions,
+      }));
+      setAnalyzeMsg("已根据素材自动填充，可继续微调后发布。");
+    } catch (e) {
+      setAnalyzeMsg(
+        `分析失败：${e instanceof Error ? e.message : String(e)}（可手动填写后发布）`,
+      );
+    } finally {
+      setAnalyzing(false);
+    }
+  }
 
   const set = (k: keyof typeof SAMPLE, v: string | number) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -169,6 +233,46 @@ function PublishPage() {
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         {/* 配置表单 */}
         <div className="space-y-6">
+          {/* AI 素材分析：粘贴履历 → LLM 抽取并填充 */}
+          <div className="glass-panel rounded-xl border border-primary/30 p-6">
+            <div className="flex items-center justify-between">
+              <SectionTitle title="AI 素材导入分析" desc="粘贴老师履历 / 简介，自动抽取人设与题库" />
+              {llm && (
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] ${
+                    llm.enabled
+                      ? "border-success/40 bg-success/10 text-success"
+                      : "border-border bg-surface/60 text-muted-foreground"
+                  }`}
+                  title={llm.enabled ? `${llm.model} · ${llm.maskedKey}` : "未配置密钥"}
+                >
+                  <Sparkles className="h-3 w-3" />
+                  {llm.enabled ? `Qwen · ${llm.model} · ${llm.maskedKey}` : "演示模式"}
+                </span>
+              )}
+            </div>
+            <Textarea
+              rows={4}
+              value={material}
+              onChange={(e) => setMaterial(e.target.value)}
+              placeholder="粘贴老师的履历 / 简历 / 个人简介 / 面经合集……AI 会据此抽取头衔、擅长领域、背景与一套面试题。"
+            />
+            <div className="mt-3 flex items-center gap-3">
+              <Button onClick={onAnalyze} disabled={analyzing || !material.trim()}>
+                {analyzing ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> 分析中……
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-1.5 h-4 w-4" /> AI 分析并填充
+                  </>
+                )}
+              </Button>
+              {analyzeMsg && <span className="text-xs text-muted-foreground">{analyzeMsg}</span>}
+            </div>
+          </div>
+
           <div className="glass-panel rounded-xl p-6">
             <SectionTitle title="对外档案" desc="展示在学生端老师库与详情页" />
             <div className="grid gap-4 sm:grid-cols-2">
