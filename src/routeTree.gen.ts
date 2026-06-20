@@ -16,6 +16,7 @@ import { Route as TeachersIndexRouteImport } from './routes/teachers.index'
 import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeachersIdRouteImport } from './routes/teachers.$id'
+import { Route as TeacherStudioRouteImport } from './routes/teacher.studio'
 import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
 import { Route as TeacherScheduleRouteImport } from './routes/teacher.schedule'
 import { Route as TeacherPublishRouteImport } from './routes/teacher.publish'
@@ -66,6 +67,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const TeachersIdRoute = TeachersIdRouteImport.update({
   id: '/teachers/$id',
   path: '/teachers/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherStudioRoute = TeacherStudioRouteImport.update({
+  id: '/teacher/studio',
+  path: '/teacher/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherStudentsRoute = TeacherStudentsRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
+  '/teacher/studio': typeof TeacherStudioRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/admin/': typeof AdminIndexRoute
   '/teacher/': typeof TeacherIndexRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
+  '/teacher/studio': typeof TeacherStudioRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/admin': typeof AdminIndexRoute
   '/teacher': typeof TeacherIndexRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/teacher/publish': typeof TeacherPublishRoute
   '/teacher/schedule': typeof TeacherScheduleRoute
   '/teacher/students': typeof TeacherStudentsRoute
+  '/teacher/studio': typeof TeacherStudioRoute
   '/teachers/$id': typeof TeachersIdRoute
   '/admin/': typeof AdminIndexRoute
   '/teacher/': typeof TeacherIndexRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
+    | '/teacher/studio'
     | '/teachers/$id'
     | '/admin/'
     | '/teacher/'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
+    | '/teacher/studio'
     | '/teachers/$id'
     | '/admin'
     | '/teacher'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/teacher/publish'
     | '/teacher/schedule'
     | '/teacher/students'
+    | '/teacher/studio'
     | '/teachers/$id'
     | '/admin/'
     | '/teacher/'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   TeacherPublishRoute: typeof TeacherPublishRoute
   TeacherScheduleRoute: typeof TeacherScheduleRoute
   TeacherStudentsRoute: typeof TeacherStudentsRoute
+  TeacherStudioRoute: typeof TeacherStudioRoute
   TeachersIdRoute: typeof TeachersIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   TeacherIndexRoute: typeof TeacherIndexRoute
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/teachers/$id'
       fullPath: '/teachers/$id'
       preLoaderRoute: typeof TeachersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/studio': {
+      id: '/teacher/studio'
+      path: '/teacher/studio'
+      fullPath: '/teacher/studio'
+      preLoaderRoute: typeof TeacherStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/students': {
@@ -515,6 +535,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherPublishRoute: TeacherPublishRoute,
   TeacherScheduleRoute: TeacherScheduleRoute,
   TeacherStudentsRoute: TeacherStudentsRoute,
+  TeacherStudioRoute: TeacherStudioRoute,
   TeachersIdRoute: TeachersIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   TeacherIndexRoute: TeacherIndexRoute,
