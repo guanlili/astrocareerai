@@ -8,7 +8,7 @@
 // 任何日志 / 返回值都用 maskSecret 处理密钥，不外泄完整 key。
 
 import { createServerFn } from "@tanstack/react-start";
-import { QwenModelClient } from "@/agent/interview/model";
+import { QwenModelClient, parseModelList } from "@/agent/interview/model";
 import type { ChatMsg } from "@/agent/interview/types";
 import { maskSecret } from "@/lib/mask";
 
@@ -16,10 +16,24 @@ function readKey(): string {
   return process.env.DASHSCOPE_API_KEY ?? "";
 }
 
-function makeClient(): QwenModelClient {
+// 记住上一次成功的模型，下次优先尝试它，避免每轮都从坏掉的模型开始
+let stickyModel: string | undefined;
+
+function orderedModels(): string[] {
+  const all = parseModelList(process.env.QWEN_MODELS ?? process.env.QWEN_MODEL);
+  return stickyModel && all.includes(stickyModel)
+    ? [stickyModel, ...all.filter((m) => m !== stickyModel)]
+    : all;
+}
+
+function makeClient(extra?: { maxTokens?: number; jsonMode?: boolean }): QwenModelClient {
   const apiKey = readKey();
   if (!apiKey) throw new Error("LLM 未配置：缺少 DASHSCOPE_API_KEY");
-  return new QwenModelClient({ apiKey });
+  return new QwenModelClient({ apiKey, models: orderedModels(), ...extra });
+}
+
+function remember(client: QwenModelClient): void {
+  if (client.lastUsedModel) stickyModel = client.lastUsedModel;
 }
 
 type CompleteInput = { system: string; messages: ChatMsg[] };
@@ -34,6 +48,7 @@ export const llmComplete = createServerFn({ method: "POST" })
         system: data.system,
         messages: data.messages,
       });
+      remember(client);
       return { text };
     } catch (e) {
       console.error(
@@ -63,24 +78,27 @@ const PROBE_TTL_MS = 60_000;
 export const llmStatus = createServerFn({ method: "GET" }).handler(
   async (): Promise<LlmStatus> => {
     const key = readKey();
-    const model = process.env.QWEN_MODEL ?? "qwen-plus";
     const maskedKey = maskSecret(key);
+    const candidates = orderedModels();
+    const firstModel = candidates[0] ?? "qwen-plus";
 
-    if (!key) return { enabled: false, model, maskedKey, reason: "未配置密钥" };
+    if (!key) return { enabled: false, model: firstModel, maskedKey, reason: "未配置密钥" };
     if (probeCache && Date.now() - probeCache.at < PROBE_TTL_MS) {
       return probeCache.result;
     }
 
     let result: LlmStatus;
     try {
-      // 极小探活请求：max_tokens 很小、不强制 JSON，尽量省 token
-      const probe = new QwenModelClient({ apiKey: key, maxTokens: 8, jsonMode: false });
+      // 极小探活请求：max_tokens 很小、不强制 JSON，尽量省 token；按候选列表轮换
+      const probe = makeClient({ maxTokens: 8, jsonMode: false });
       await probe.complete({ system: "ping", messages: [{ role: "user", content: "ping" }] });
-      result = { enabled: true, model, maskedKey };
+      remember(probe);
+      // 显示实际连通的模型
+      result = { enabled: true, model: probe.lastUsedModel ?? firstModel, maskedKey };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.warn(`[llm] 健康探测失败 (key=${maskedKey}):`, msg);
-      result = { enabled: false, model, maskedKey, reason: msg.slice(0, 140) };
+      result = { enabled: false, model: firstModel, maskedKey, reason: msg.slice(0, 140) };
     }
     probeCache = { at: Date.now(), result };
     return result;
@@ -107,5 +125,6 @@ export const analyzeTeacherMaterial = createServerFn({ method: "POST" })
       system,
       messages: [{ role: "user", content: data.material }],
     });
+    remember(client);
     return { raw: text };
   });

@@ -114,20 +114,37 @@ export class StubModelClient implements ModelClient {
 
 export type QwenModelClientOptions = {
   apiKey?: string; // 默认读 DASHSCOPE_API_KEY（仅服务端）
-  model?: string; // 默认 qwen-plus
+  model?: string; // 单模型（向后兼容；未设 models 时用它）
+  models?: string | string[]; // 候选模型列表（逗号分隔或数组），按序尝试、失败切换
   baseUrl?: string; // 默认 DashScope compatible-mode
   maxTokens?: number;
   temperature?: number;
   jsonMode?: boolean; // 强制 JSON 输出（提示词需含 "json"），默认 true
 };
 
+/** 把模型配置规整成有序去重的候选列表。 */
+export function parseModelList(
+  input: string | string[] | undefined,
+  fallback = "qwen-plus",
+): string[] {
+  const raw = Array.isArray(input) ? input : (input ?? fallback).split(/[,，]/);
+  const list = raw.map((s) => s.trim()).filter(Boolean);
+  const seen = new Set<string>();
+  const out = list.filter((m) => (seen.has(m) ? false : (seen.add(m), true)));
+  return out.length ? out : [fallback];
+}
+
 /**
  * 通过 DashScope 的 OpenAI 兼容端点调用 Qwen（fetch，无额外依赖）。
- * 仅应在服务端构造（密钥不可进客户端）。system 作为首条 system 消息，
- * ChatMsg 映射为 user / assistant。
+ * 仅应在服务端构造（密钥不可进客户端）。
+ *
+ * 支持多模型轮换：按 `models` 顺序尝试，某个模型不可用（4xx/5xx/网络/不支持等）
+ * 自动切到下一个；鉴权失败（401，对所有模型一致）则立即终止，不浪费调用。
+ * `lastUsedModel` 记录实际成功的模型，供 UI 展示。
  */
 export class QwenModelClient implements ModelClient {
-  readonly model: string;
+  readonly models: string[];
+  lastUsedModel?: string;
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly maxTokens: number;
@@ -136,7 +153,9 @@ export class QwenModelClient implements ModelClient {
 
   constructor(opts: QwenModelClientOptions = {}) {
     this.apiKey = opts.apiKey ?? process.env.DASHSCOPE_API_KEY ?? "";
-    this.model = opts.model ?? process.env.QWEN_MODEL ?? "qwen-plus";
+    this.models = parseModelList(
+      opts.models ?? opts.model ?? process.env.QWEN_MODELS ?? process.env.QWEN_MODEL,
+    );
     this.baseUrl =
       opts.baseUrl ??
       process.env.QWEN_BASE_URL ??
@@ -151,7 +170,34 @@ export class QwenModelClient implements ModelClient {
     }
   }
 
+  /** 当前展示用的模型名：优先用上次成功的，否则候选首位。 */
+  get model(): string {
+    return this.lastUsedModel ?? this.models[0];
+  }
+
   async complete(input: { system: string; messages: ChatMsg[] }): Promise<string> {
+    const errors: string[] = [];
+    for (const model of this.models) {
+      try {
+        const text = await this.callOnce(model, input);
+        this.lastUsedModel = model;
+        return text;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        // 鉴权错误对所有模型一致，换模型也没用 → 立即终止
+        if (/\b401\b/.test(msg)) throw e;
+        errors.push(`${model} → ${msg}`);
+      }
+    }
+    throw new Error(
+      `所有候选模型均不可用（${this.models.join(", ")}）：${errors.join(" | ")}`,
+    );
+  }
+
+  private async callOnce(
+    model: string,
+    input: { system: string; messages: ChatMsg[] },
+  ): Promise<string> {
     const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
       { role: "system", content: input.system },
       ...input.messages
@@ -178,7 +224,7 @@ export class QwenModelClient implements ModelClient {
         authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: this.model,
+        model,
         messages,
         max_tokens: this.maxTokens,
         temperature: this.temperature,
