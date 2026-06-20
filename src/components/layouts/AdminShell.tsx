@@ -10,6 +10,7 @@ import {
   Activity,
   CreditCard,
   AlertTriangle,
+  ListTodo,
   RotateCcw,
   type LucideIcon,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { resetAppState } from "@/mock/appStore";
 
 const items: { to: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { to: "/admin", label: "总览", icon: LayoutDashboard, exact: true },
+  { to: "/admin/tasks", label: "运营待办", icon: ListTodo },
   { to: "/admin/review", label: "老师入驻审核", icon: UserCheck },
   { to: "/admin/content", label: "题库 / 内容管理", icon: Database },
   { to: "/admin/users", label: "用户管理", icon: Users2 },
@@ -41,13 +43,13 @@ export function AdminShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur-2xl md:flex">
         <Link
           to="/admin"
-          className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5"
+          className="flex h-[72px] items-center gap-2 border-b border-sidebar-border px-5"
         >
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-gold/15 ring-1 ring-gold/40">
-            <ShieldCheck className="h-4 w-4 text-gold" />
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-foreground text-background shadow-elevate">
+            <ShieldCheck className="h-4 w-4 text-background" />
           </div>
           <div className="leading-tight">
             <div className="font-display text-sm font-semibold">面镜 · 管理后台</div>
@@ -56,7 +58,7 @@ export function AdminShell({
             </div>
           </div>
         </Link>
-        <nav className="flex-1 space-y-0.5 px-2 py-3">
+        <nav className="flex-1 space-y-1 px-3 py-4">
           {items.map((it) => {
             const active = it.exact
               ? pathname === it.to
@@ -66,9 +68,9 @@ export function AdminShell({
               <Link
                 key={it.to}
                 to={it.to}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                   active
-                    ? "bg-primary/15 text-foreground ring-1 ring-primary/30"
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-black/5"
                     : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
                 }`}
               >
@@ -96,7 +98,7 @@ export function AdminShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/85 px-6 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-border/70 bg-background/75 px-6 backdrop-blur-2xl">
           <div className="min-w-0">
             <h1 className="truncate font-display text-lg font-semibold">{title}</h1>
             {subtitle && (
@@ -108,7 +110,34 @@ export function AdminShell({
             <PerspectiveSwitcher />
           </div>
         </header>
-        <main className="p-6">{children}</main>
+        {/* 移动端水平导航：小屏下侧栏不可见时的替代入口，可横向滚动 */}
+        <nav
+          aria-label="管理后台导航"
+          className="flex gap-1.5 overflow-x-auto border-b border-border/70 bg-background/75 px-5 py-2 backdrop-blur-2xl sm:px-7 md:hidden"
+        >
+          {items.map((it) => {
+            const active = it.exact
+              ? pathname === it.to
+              : pathname === it.to || pathname.startsWith(it.to + "/");
+            const Icon = it.icon;
+            return (
+              <Link
+                key={it.to}
+                to={it.to}
+                aria-current={active ? "page" : undefined}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card/70 text-muted-foreground"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {it.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <main className="p-5 sm:p-7">{children}</main>
       </div>
 
       <Toaster richColors position="top-center" />
