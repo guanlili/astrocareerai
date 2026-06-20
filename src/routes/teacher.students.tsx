@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { TeacherShell } from "@/components/layouts/TeacherShell";
 import { StatusBadge } from "@/components/common/PanelKit";
 import { Search, Filter, CheckCircle2 } from "lucide-react";
-import { students } from "@/mock/platform";
+import { useMockState, getAppState, studentsForTeacher } from "@/mock/store";
 import { getOverlay, setOverlay, type StudentOverlay } from "@/mock/studentNotes";
 
 export const Route = createFileRoute("/teacher/students")({
@@ -17,25 +17,27 @@ const intentTone = { high: "gold", medium: "info", low: "neutral" } as const;
 type IntentFilter = "all" | "high" | "medium" | "low";
 
 function StudentsPage() {
+  // 学员名单：静态演示学员 + 订单反推的新学员（学生新预约实时出现）
+  const myStudents = studentsForTeacher(useMockState(), "陈昊");
   const [query, setQuery] = useState("");
   const [intent, setIntent] = useState<IntentFilter>("all");
-  const [overlays, setOverlays] = useState<Record<string, StudentOverlay>>({});
-
-  useEffect(() => {
+  // overlay（备注 / 联系状态）：惰性初始化用 seed 学员，避免 useEffect 依赖 myStudents 反复重算。
+  // 订单反推的新学员 id 不在其中，rows 取 overlays[id] 为 undefined → 显示默认（未联系）。
+  const [overlays, setOverlays] = useState<Record<string, StudentOverlay>>(() => {
     const m: Record<string, StudentOverlay> = {};
-    students.forEach((s) => (m[s.id] = getOverlay(s.id)));
-    setOverlays(m);
-  }, []);
+    studentsForTeacher(getAppState(), "陈昊").forEach((s) => (m[s.id] = getOverlay(s.id)));
+    return m;
+  });
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return students
+    return myStudents
       .map((s) => ({ ...s, ...overlays[s.id] }))
       .filter((s) => (intent === "all" ? true : s.intent === intent))
       .filter((s) => (q ? s.name.toLowerCase().includes(q) : true));
-  }, [query, intent, overlays]);
+  }, [myStudents, query, intent, overlays]);
 
-  const highCount = students.filter((s) => s.intent === "high").length;
+  const highCount = myStudents.filter((s) => s.intent === "high").length;
 
   function patchOverlay(id: string, patch: StudentOverlay) {
     const next = setOverlay(id, patch);

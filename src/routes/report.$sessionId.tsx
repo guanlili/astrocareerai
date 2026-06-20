@@ -19,6 +19,7 @@ import { StudentShell } from "@/components/layouts/StudentShell";
 import { reportData, growthTrend } from "@/mock/sessions";
 import { SectionTitle, StatusBadge } from "@/components/common/PanelKit";
 import { getTeacher } from "@/mock/teachers";
+import { buildTeacherConfig } from "@/mock/interview";
 import { useAppState, ensureSession, type SessionRecord } from "@/mock/appStore";
 import type { InterviewReport } from "@/agent/interview";
 import {
@@ -62,6 +63,8 @@ function ReportPage() {
     scene: seedSceneFor(sessionId) ?? FALLBACK_SCENE,
     fromStore: false,
   }));
+  // 按题复盘：点维度筛选，六维评分下钻到逐题对话片段
+  const [selectedDim, setSelectedDim] = useState<string | null>(null);
 
   useEffect(() => {
     let report: InterviewReport | null = null;
@@ -108,6 +111,16 @@ function ReportPage() {
   }, [loaded.fromStore, loaded.teacherId]);
 
   const report = loaded.report;
+  // 按题复盘所需：维度名映射 + 题面回查（perQuestion.dimension 为维度 id，questionId 指向题库）
+  const drillConfig = loaded.teacherId ? buildTeacherConfig(loaded.teacherId) : null;
+  const drillRubric = drillConfig?.knowledge.rubric ?? [];
+  const drillBank = drillConfig?.knowledge.questionBank ?? [];
+  const dimNameOf = (id: string) => drillRubric.find((r) => r.id === id)?.name ?? id;
+  const questionPromptOf = (qid: string) => drillBank.find((n) => n.id === qid)?.prompt;
+  const perQuestion = report.perQuestion ?? [];
+  const drilledQuestions = selectedDim
+    ? perQuestion.filter((f) => f.dimension === selectedDim)
+    : perQuestion;
   const teacher = loaded.teacherId ? getTeacher(loaded.teacherId) : undefined;
   const idx = sessions.findIndex((s) => s.sessionId === sessionId);
   const prevOverall = idx >= 0 && idx < sessions.length - 1 ? sessions[idx + 1].overall : null;
@@ -229,6 +242,116 @@ function ReportPage() {
           </div>
         </div>
       </section>
+
+      {perQuestion.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pb-2">
+          <div className="glass-panel rounded-2xl p-6 sm:p-7">
+            <SectionTitle
+              title="按题复盘 · 六维下钻"
+              desc="点击维度筛选，每一题的评分都可追溯到对应对话片段"
+            />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedDim(null)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  selectedDim === null
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                全部 · {perQuestion.length}
+              </button>
+              {drillRubric.map((r) => {
+                const count = perQuestion.filter((f) => f.dimension === r.id).length;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => setSelectedDim(r.id)}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      selectedDim === r.id
+                        ? "border-primary bg-primary/10 text-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {r.name} · {count}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {drilledQuestions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">该维度本场未单独出题。</p>
+              ) : (
+                drilledQuestions.map((f, i) => (
+                  <div
+                    key={`${f.questionId}-${i}`}
+                    className="rounded-xl border border-border bg-card/70 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <StatusBadge tone="info">{dimNameOf(f.dimension)}</StatusBadge>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          第 {i + 1} 题
+                        </span>
+                      </div>
+                      <span className="font-mono text-lg text-gold">
+                        {f.score}
+                        <span className="ml-0.5 text-xs text-muted-foreground">/100</span>
+                      </span>
+                    </div>
+                    {questionPromptOf(f.questionId) && (
+                      <p className="mt-2 rounded-md bg-surface/60 p-2 text-xs text-muted-foreground">
+                        原题：{questionPromptOf(f.questionId)}
+                      </p>
+                    )}
+                    {f.oneLineComment && (
+                      <p className="mt-2 text-sm leading-relaxed text-foreground">
+                        {f.oneLineComment}
+                      </p>
+                    )}
+                    {(f.strengths.length > 0 || f.improvements.length > 0) && (
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        {f.strengths.length > 0 && (
+                          <div>
+                            <div className="text-xs font-medium text-success">亮点</div>
+                            <ul className="mt-1 space-y-1">
+                              {f.strengths.map((s, j) => (
+                                <li
+                                  key={j}
+                                  className="text-xs leading-relaxed text-muted-foreground"
+                                >
+                                  · {s}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {f.improvements.length > 0 && (
+                          <div>
+                            <div className="text-xs font-medium text-warning">可改进</div>
+                            <ul className="mt-1 space-y-1">
+                              {f.improvements.map((s, j) => (
+                                <li
+                                  key={j}
+                                  className="text-xs leading-relaxed text-muted-foreground"
+                                >
+                                  · {s}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-10 lg:grid-cols-3">
         <DimCard

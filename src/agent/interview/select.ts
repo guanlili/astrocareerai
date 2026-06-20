@@ -54,15 +54,21 @@ export function selectNextQuestion(
     .filter((n): n is QuestionNode => !!n);
   const coveredDims = new Set(askedNodes.map((n) => n.dimension));
 
-  // 1. 追问优先
+  // 1. 追问优先：顺着上一题深挖（是否追问由编排器按上一答分数裁决，§7.4 第 1 条）
   const lastId = session.askedQuestionIds.at(-1);
   const lastNode = lastId ? bank.find((n) => n.id === lastId) : undefined;
   if (preferFollowUp && lastNode?.followUps?.length) {
+    // 按追问深度轮换方向：同题被多次追问时逐层取下一个 followUp，避免每次都死取第 1 个
+    const depth = Math.max(
+      0,
+      session.askedQuestionIds.filter((id) => id === lastNode.id).length - 1,
+    );
+    const idx = Math.min(depth, lastNode.followUps.length - 1);
     return {
       branch: "follow_up",
       questionId: lastNode.id,
       dimension: lastNode.dimension,
-      seedPrompt: lastNode.followUps[0],
+      seedPrompt: lastNode.followUps[idx],
       isFollowUp: true,
     };
   }

@@ -9,6 +9,7 @@
 
 import type { TeacherConfigProvider } from "@/agent/interview/contracts";
 import type {
+  HandoffPolicy,
   LanguageMode,
   QuestionNode,
   RubricDimension,
@@ -258,6 +259,43 @@ function pickKnowledge(teacherId: string): {
 const DEFAULT_TEACHER_LANGUAGE: LanguageMode = { primary: "zh", mixing: "light" };
 
 // ──────────────────────────────────────────────────────────────────────────
+// 转人工策略默认值（§9）—— 非 studio 老师用此默认；studio 老师由 handoffPolicyFromRules 映射
+// ──────────────────────────────────────────────────────────────────────────
+
+/** 低分阈值默认值：任一维度低于此分即建议转人工。 */
+export const DEFAULT_HANDOFF_THRESHOLD = 55;
+
+/** 默认转人工策略：低分阈值 + 3 条关键词规则（与 teacherStudio 默认 handoffRules 语义对齐）。 */
+export function defaultHandoffPolicy(): HandoffPolicy {
+  return {
+    lowDimThreshold: DEFAULT_HANDOFF_THRESHOLD,
+    rules: [
+      {
+        id: "r1",
+        keywords: ["具体案例", "我的情况"],
+        minHits: 3,
+        action: "提示转人工",
+        enabled: true,
+      },
+      {
+        id: "r2",
+        keywords: ["想找您本人", "找您本人", "预约本人", "真人辅导", "想找本人"],
+        minHits: 1,
+        action: "立即转人工",
+        enabled: true,
+      },
+      {
+        id: "r3",
+        keywords: ["薪资谈判", "职场纠纷", "劳动仲裁", "竞业"],
+        minHits: 1,
+        action: "提示老师介入",
+        enabled: false,
+      },
+    ],
+  };
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // 配置组装：按 teacherId 产出 TeacherAvatarConfig（覆盖全部 mock 老师）
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -302,6 +340,7 @@ export function buildTeacherConfig(teacherId: string): TeacherAvatarConfig {
       targetDurationMax: 45,
       stayInScope: true,
     },
+    handoff: defaultHandoffPolicy(),
   };
 }
 

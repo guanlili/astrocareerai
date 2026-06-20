@@ -43,6 +43,12 @@ function SchedulePage() {
         <Legend color="bg-muted ring-border" label="未开放" />
       </div>
 
+      {openSet.size === 0 && bookedSet.size === 0 && (
+        <div className="mb-4 rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
+          本周尚未开放任何时段，点击下方格子开放可预约时段。
+        </div>
+      )}
+
       <div className="glass-panel rounded-xl p-6">
         <div className="grid grid-cols-[80px_repeat(7,1fr)] gap-1.5">
           <div />

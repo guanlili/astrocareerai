@@ -65,6 +65,8 @@ type HistoryRow = {
 
 function GrowthPage() {
   const st = useAppState();
+  // CTA 跟随该学生最近一次练习的老师（首帧用 seed，稳定）
+  const focusTeacherId = st.sessions[0]?.teacherId ?? "t-001";
   // SSR/首帧渲染静态回退（确定性）；挂载后从 appStore.sessions + 报告 localStorage 推导真实数据。
   const [derived, setDerived] = useState<{
     history: HistoryRow[];
@@ -84,23 +86,27 @@ function GrowthPage() {
       );
 
       // 拉取每场对应报告（若存在则用真实 overall/dimensions），seed-* 无报告则用 SessionRecord.overall
-      const withScore = ordered.map((s) => {
+      const withScore = ordered.map((s, i) => {
         let score = s.overall;
         let dimensions: { name: string; score: number; prev?: number }[] | null = null;
+        let rounds = 0;
         const raw = localStorage.getItem(`mirrorhire:report:${s.sessionId}`);
         if (raw) {
           try {
             const r = JSON.parse(raw) as InterviewReport;
             score = r.overall;
             dimensions = r.dimensions;
+            rounds = r.perQuestion?.length ?? 0;
           } catch {
             /* 解析失败 → 用 SessionRecord.overall */
           }
         }
-        return { rec: s, score, dimensions };
+        // 无逐题报告时给确定性兜底（seed 场景），避免显示 0 轮
+        if (!rounds) rounds = 4 + (i % 3);
+        return { rec: s, score, dimensions, rounds };
       });
 
-      // 历史行（delta = 与上一场差值；rounds 从报告无来源，先按场次序号给个演示值）
+      // 历史行（delta = 与上一场差值；rounds 取报告逐题反馈条数，无报告则兜底）
       const history: HistoryRow[] = withScore
         .map((h, i) => {
           const prev = i > 0 ? withScore[i - 1].score : null;
@@ -111,7 +117,7 @@ function GrowthPage() {
             scene: h.rec.scene,
             score: h.score,
             delta,
-            rounds: 4 + (i % 3), // 演示值（无真实轮次来源）
+            rounds: h.rounds,
           };
         })
         .reverse(); // 最新优先展示
@@ -201,14 +207,14 @@ function GrowthPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/chat/$teacherId"
-              params={{ teacherId: "t-001" }}
+              params={{ teacherId: focusTeacherId }}
               className="rounded-full bg-background px-4 py-2 text-sm font-medium text-foreground transition-transform hover:-translate-y-0.5"
             >
               开始 10 分钟专项训练
             </Link>
             <Link
               to="/teachers/$id"
-              params={{ id: "t-001" }}
+              params={{ id: focusTeacherId }}
               className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-white/10"
             >
               预约真人终面
