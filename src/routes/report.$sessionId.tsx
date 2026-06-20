@@ -428,6 +428,7 @@ function ReportPage() {
             <Link
               to="/booking/$teacherId"
               params={{ teacherId: teacher.id }}
+              search={{ from: sessionId }}
               className="inline-flex h-11 items-center rounded-md gradient-primary px-6 font-medium text-primary-foreground shadow-elevate"
             >
               <MessageSquare className="mr-1.5 h-4 w-4" /> 查看 {teacher.name} 档期 →

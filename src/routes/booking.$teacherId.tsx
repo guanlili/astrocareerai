@@ -14,10 +14,15 @@ import {
   SCHEDULE_SLOTS,
   type StudioState,
 } from "@/mock/teacherStudio";
-import { Calendar, Clock, CreditCard, Shield, CalendarX } from "lucide-react";
+import type { InterviewReport } from "@/agent/interview";
+import { Calendar, Clock, CreditCard, Shield, CalendarX, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/booking/$teacherId")({
   head: () => ({ meta: [{ title: "预约 1v1 真人辅导 · 面镜 MirrorHire" }] }),
+  // 转化背景材料：从报告页带来的 sessionId（§9 / PRD §4.5），降低真人沟通成本
+  validateSearch: (search: Record<string, unknown>): { from?: string } => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   loader: ({ params }) => {
     const t = getTeacher(params.teacherId);
     if (!t) throw notFound();
@@ -41,9 +46,43 @@ export const Route = createFileRoute("/booking/$teacherId")({
 const FALLBACK_TIMES = ["10:00", "14:00", "16:00", "20:00"];
 const WEEKDAYS = ["周一", "周二", "周三", "周四"];
 
+type BackgroundMaterial = {
+  scene: string;
+  overall: number;
+  weaknesses: string[];
+  customFocus?: string;
+};
+
 function BookingPage() {
   const { teacher: t } = Route.useLoaderData();
+  const { from } = Route.useSearch();
   const navigate = useNavigate();
+
+  // 从报告页带来的会话背景：让老师 1v1 前预习薄弱项，降低沟通成本（§9 / PRD §4.5）
+  const [bg, setBg] = useState<BackgroundMaterial | null>(null);
+  useEffect(() => {
+    if (!from) return;
+    try {
+      const r = localStorage.getItem(`mirrorhire:report:${from}`);
+      const s = localStorage.getItem(`mirrorhire:session:${from}`);
+      if (!r) return;
+      const report = JSON.parse(r) as InterviewReport;
+      const session = s
+        ? (JSON.parse(s) as { setup?: { companyName?: string; roleTitle?: string; customFocus?: string } })
+        : undefined;
+      const scene =
+        [session?.setup?.companyName, session?.setup?.roleTitle].filter(Boolean).join(" · ") ||
+        "模拟面试";
+      setBg({
+        scene,
+        overall: report.overall,
+        weaknesses: report.weaknesses ?? [],
+        customFocus: session?.setup?.customFocus,
+      });
+    } catch {
+      /* ignore */
+    }
+  }, [from]);
 
   // 工作室草稿：SSR/首帧用确定性 defaultStudio()，挂载后再读 localStorage 真实值
   const [studio, setStudio] = useState<StudioState>(defaultStudio());
@@ -156,6 +195,43 @@ function BookingPage() {
                 </div>
               </div>
             </div>
+
+            {/* 转化背景材料：从模拟面试报告带来的薄弱项，老师 1v1 前可预习（§9 / PRD §4.5） */}
+            {bg && (
+              <div className="glass-panel rounded-xl border border-gold/30 bg-gold/5 p-5">
+                <div className="mb-2 flex items-center gap-2 font-display text-base font-semibold">
+                  <FileText className="h-4 w-4 text-gold" /> 本次面试背景
+                  <StatusBadge tone="gold">已同步给老师</StatusBadge>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  来自你刚完成的模拟面试「{bg.scene}」，综合评分{" "}
+                  <span className="font-mono text-foreground">{bg.overall}</span>。老师将在 1v1 前预习，直接针对薄弱项展开。
+                </div>
+                {bg.customFocus && (
+                  <div className="mt-2 text-sm">
+                    <span className="text-muted-foreground">你的关注点：</span>
+                    <span className="text-foreground">{bg.customFocus}</span>
+                  </div>
+                )}
+                {bg.weaknesses.length > 0 && (
+                  <ul className="mt-3 space-y-1.5">
+                    {bg.weaknesses.slice(0, 3).map((w, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-muted-foreground">
+                        <span className="text-gold">·</span>
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Link
+                  to="/report/$sessionId"
+                  params={{ sessionId: from! }}
+                  className="mt-3 inline-block font-mono text-xs text-primary-glow hover:underline"
+                >
+                  查看完整报告 →
+                </Link>
+              </div>
+            )}
 
             <div className="glass-panel rounded-xl p-5">
               <div className="mb-3 flex items-center gap-2 font-display text-base font-semibold">
