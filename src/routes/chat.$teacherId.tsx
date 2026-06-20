@@ -113,9 +113,14 @@ function ChatPage() {
 
   const [input, setInput] = useState("");
   const [pendingUser, setPendingUser] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false); // 等待 AI 回合
+  const [busy, setBusy] = useState(false); // 等待 AI 回合（显示「正在输入」）
   const [starting, setStarting] = useState(false);
   const [generating, setGenerating] = useState(false);
+  // 逐字打字机：正在打字的 AI 消息下标 + 已显示字数（§6.4）
+  const [typing, setTyping] = useState<{ idx: number; n: number } | null>(null);
+  const beginTyping = (idx: number) => setTyping({ idx, n: 0 });
+  const skipTyping = () =>
+    setTyping((cur) => (cur ? { idx: cur.idx, n: Number.MAX_SAFE_INTEGER } : null));
 
   // 配置表单
   const [resume, setResume] = useState("");
@@ -158,7 +163,19 @@ function ChatPage() {
   // 新消息滚动到底
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [session?.messages.length, pendingUser, busy]);
+  }, [session?.messages.length, pendingUser, busy, typing?.n]);
+
+  // 逐字推进：每帧多显示几个字，直到整段显示完（§6.4）
+  useEffect(() => {
+    if (!typing) return;
+    const full = session?.messages[typing.idx]?.content ?? "";
+    if (typing.n >= full.length) {
+      setTyping(null);
+      return;
+    }
+    const id = setTimeout(() => setTyping({ idx: typing.idx, n: typing.n + 2 }), 24);
+    return () => clearTimeout(id);
+  }, [typing, session]);
 
   const messages: ChatMsg[] = session?.messages ?? [];
   const askedCount = session?.askedQuestionIds.length ?? 0;
@@ -197,6 +214,7 @@ function ChatPage() {
       setPhase("interview");
       setDrawerOpen(false);
       setResumable(null);
+      beginTyping(s.messages.length - 1); // 开场白逐字打出
     } finally {
       setStarting(false);
     }
@@ -222,6 +240,7 @@ function ChatPage() {
 
   async function send() {
     if (!input.trim() || !session || busy) return;
+    skipTyping(); // 若上一条还在打字，先补全
     const text = input;
     setInput("");
     setPendingUser(text);
@@ -229,6 +248,7 @@ function ChatPage() {
     try {
       const { session: s } = await agent.reply(session.id, text);
       setSession(s);
+      beginTyping(s.messages.length - 1); // 新回复逐字打出
     } finally {
       setPendingUser(null);
       setBusy(false);
@@ -434,6 +454,8 @@ function ChatPage() {
                     </div>
                   );
                 const ai = m.role === "ai";
+                const isTyping = ai && typing?.idx === i;
+                const shownContent = isTyping ? m.content.slice(0, typing!.n) : m.content;
                 return (
                   <div key={i} className={`flex ${ai ? "" : "flex-row-reverse"} gap-3`}>
                     {ai && (
@@ -445,16 +467,21 @@ function ChatPage() {
                     )}
                     <div className="max-w-[78%] space-y-1">
                       <div
+                        onClick={isTyping ? skipTyping : undefined}
+                        title={isTyping ? t9n("chat.skipTyping") : undefined}
                         className={`whitespace-pre-wrap rounded-2xl p-4 text-sm leading-relaxed ${
                           ai
                             ? "rounded-tl-sm bg-surface-2 text-foreground"
                             : "rounded-tr-sm bg-primary text-primary-foreground"
-                        }`}
+                        } ${isTyping ? "cursor-pointer" : ""}`}
                       >
-                        {m.content}
+                        {shownContent}
+                        {isTyping && (
+                          <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse bg-primary/70 align-middle" />
+                        )}
                       </div>
-                      {/* 即时反馈：一句话点评 + 维度标签 + 本题得分（详细留到报告，§13-Q2） */}
-                      {ai && m.feedback && (
+                      {/* 即时反馈：打字完成后才显示（面试官「脑内打分」，不在对话里念出，§6.4） */}
+                      {ai && m.feedback && !isTyping && (
                         <div className="rounded-lg border border-gold/30 bg-gold/5 p-2.5 text-xs">
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-mono text-[10px] uppercase tracking-wider text-gold">
@@ -471,7 +498,7 @@ function ChatPage() {
                           )}
                         </div>
                       )}
-                      {ai && m.meta && !m.feedback && (
+                      {ai && m.meta && !m.feedback && !isTyping && (
                         <div className="rounded-xl border border-primary/15 bg-primary/5 p-2.5 text-xs">
                           <div className="flex items-center gap-1.5 font-medium text-primary">
                             <BrainCircuit className="h-3.5 w-3.5" /> 为什么追问
@@ -499,14 +526,24 @@ function ChatPage() {
                   </div>
                 </div>
               )}
+              {/* 正在输入：类似微信打字态——LLM 运作期间显示三点跳动气泡（§6.4） */}
               {busy && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-end gap-3">
                   <img
                     src={t.avatar}
                     alt=""
-                    className="h-8 w-8 rounded-full ring-2 ring-primary/30"
+                    className="h-8 w-8 shrink-0 rounded-full ring-2 ring-primary/30"
                   />
-                  <Loader2 className="h-4 w-4 animate-spin" /> {t9n("chat.thinking")}
+                  <div className="space-y-1">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {t.name} {t9n("chat.typing")}
+                    </div>
+                    <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-surface-2 px-4 py-3">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
