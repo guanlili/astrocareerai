@@ -94,12 +94,12 @@ function TeacherHome() {
                   contentStyle={{
                     background: "var(--popover)",
                     border: "1px solid var(--border)",
-                    borderRadius: 8,
+                    borderRadius: 0,
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="count" name="对话轮次" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="paid" name="付费转化" fill="var(--gold)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" name="对话轮次" fill="var(--primary)" />
+                <Bar dataKey="paid" name="付费转化" fill="var(--accent-lite)" />
               </BarChart>
             </ResponsiveContainer>
           </div>

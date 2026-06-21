@@ -25,12 +25,12 @@ export function KvRow({
   }
   return (
     <div
-      className={`mb-2 flex items-center justify-between rounded-md px-4 py-3 ${
-        highlight ? "ring-1 ring-gold/40 bg-gold/10" : "bg-surface/40"
+      className={`mb-2 flex items-center justify-between border-2 border-ink px-4 py-3 ${
+        highlight ? "bg-accent/15" : "bg-surface-2"
       }`}
     >
       <span className="text-sm">{k}</span>
-      <span className={`font-mono ${highlight ? "text-gold" : "text-foreground"}`}>{v}</span>
+      <span className={`font-mono font-semibold ${highlight ? "text-accent" : "text-ink"}`}>{v}</span>
     </div>
   );
 }

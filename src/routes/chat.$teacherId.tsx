@@ -342,7 +342,11 @@ function ChatPage() {
         <aside className="hidden flex-col gap-4 border-r border-border bg-sidebar/40 p-4 lg:flex">
           <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center gap-3">
-              <img src={t.avatar} alt="" className="h-12 w-12 rounded-lg ring-2 ring-primary/40" />
+              <img
+                src={t.avatar}
+                alt=""
+                className="h-12 w-12 rounded-full ring-2 ring-primary/40"
+              />
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">
                   {t.name} · {t9n("header.aiAvatar")}

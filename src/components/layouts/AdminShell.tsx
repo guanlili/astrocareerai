@@ -42,18 +42,15 @@ export function AdminShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur-2xl md:flex">
-        <Link
-          to="/admin"
-          className="flex h-[72px] items-center gap-2 border-b border-sidebar-border px-5"
-        >
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-foreground text-background shadow-elevate">
-            <ShieldCheck className="h-4 w-4 text-background" />
+    <div className="flex min-h-screen w-full bg-paper">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-ink bg-paper md:flex">
+        <Link to="/admin" className="flex h-[72px] items-center gap-3 border-b-2 border-ink px-5">
+          <div className="grid h-9 w-9 place-items-center bg-ink text-paper">
+            <ShieldCheck className="h-4 w-4" />
           </div>
           <div className="leading-tight">
-            <div className="font-display text-sm font-semibold">面镜 · 管理后台</div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-gold/80">
+            <div className="font-ui text-sm font-bold text-ink">面镜 · 管理后台</div>
+            <div className="font-ui text-[10px] uppercase tracking-[0.16em] text-accent">
               Admin Console
             </div>
           </div>
@@ -68,10 +65,10 @@ export function AdminShell({
               <Link
                 key={it.to}
                 to={it.to}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                className={`font-cn flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors ${
                   active
-                    ? "bg-card text-foreground shadow-sm ring-1 ring-black/5"
-                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+                    ? "bg-ink text-paper"
+                    : "text-[var(--text-muted)] hover:bg-surface-2 hover:text-ink"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -80,7 +77,7 @@ export function AdminShell({
             );
           })}
         </nav>
-        <div className="border-t border-sidebar-border p-4 font-mono text-[11px] text-muted-foreground">
+        <div className="border-t-2 border-ink p-4 font-mono text-[11px] text-[var(--text-muted)]">
           <div>env · production</div>
           <div className="mt-1">build · 2026.06.18</div>
           <button
@@ -90,7 +87,7 @@ export function AdminShell({
                 description: "审核 / 训练 / 合规 / 订单状态均已回到初始状态",
               });
             }}
-            className="mt-3 inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[11px] transition-colors hover:bg-accent hover:text-foreground"
+            className="mt-3 inline-flex items-center gap-1 border-2 border-ink bg-surface px-2.5 py-1 text-[11px] transition-colors hover:bg-accent hover:text-ink"
           >
             <RotateCcw className="h-3 w-3" /> 重置演示数据
           </button>
@@ -98,11 +95,13 @@ export function AdminShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-border/70 bg-background/75 px-6 backdrop-blur-2xl">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b-2 border-ink bg-paper px-6">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-lg font-semibold">{title}</h1>
+            <h1 className="font-cn truncate font-ui text-lg font-bold tracking-tight">{title}</h1>
             {subtitle && (
-              <p className="truncate font-mono text-xs text-muted-foreground">{subtitle}</p>
+              <p className="font-cn truncate font-mono text-xs text-[var(--text-muted)]">
+                {subtitle}
+              </p>
             )}
           </div>
           <div className="ml-auto flex items-center gap-3">
@@ -113,7 +112,7 @@ export function AdminShell({
         {/* 移动端水平导航：小屏下侧栏不可见时的替代入口，可横向滚动 */}
         <nav
           aria-label="管理后台导航"
-          className="flex gap-1.5 overflow-x-auto border-b border-border/70 bg-background/75 px-5 py-2 backdrop-blur-2xl sm:px-7 md:hidden"
+          className="flex gap-1.5 overflow-x-auto border-b-2 border-ink bg-paper px-5 py-2 sm:px-7 md:hidden"
         >
           {items.map((it) => {
             const active = it.exact
@@ -125,10 +124,10 @@ export function AdminShell({
                 key={it.to}
                 to={it.to}
                 aria-current={active ? "page" : undefined}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 border-2 px-3 py-1.5 text-xs font-semibold transition-colors ${
                   active
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card/70 text-muted-foreground"
+                    ? "border-ink bg-ink text-paper"
+                    : "border-ink bg-surface text-[var(--text-muted)]"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />

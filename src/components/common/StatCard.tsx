@@ -13,13 +13,11 @@ export function StatCard({
   tone?: "gold" | "info";
 }) {
   const color =
-    tone === "gold" ? "text-gold" : tone === "info" ? "text-primary-glow" : "text-foreground";
+    tone === "gold" || tone === "info" ? "text-accent" : "text-ink";
   return (
-    <div className="glass-panel rounded-xl p-5">
-      <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
-      <div className={`mt-2 font-mono text-3xl font-semibold ${color}`}>{value}</div>
+    <div className="glass-panel p-5">
+      <div className="font-mono text-[11px] uppercase tracking-widest text-label">{label}</div>
+      <div className={`mt-2 font-mono text-3xl font-bold ${color}`}>{value}</div>
     </div>
   );
 }
