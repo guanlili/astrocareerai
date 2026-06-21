@@ -14,11 +14,11 @@
 
 ## 🧭 三端一览
 
-| 端 | 入口 | 主要页面 |
-|---|---|---|
-| **学生端** | `/` | 首页、老师库 `/teachers`、老师详情 `/teachers/$id`、AI 文字对练 `/chat/$teacherId`、**视频面试间** `/video/$teacherId`、预约 1v1 `/booking/$teacherId`、评估报告 `/report/$sessionId`、个人中心 `/me`、成长追踪 `/growth` |
-| **老师端** | `/teacher` | 工作台、数据分析 `analytics`、AI 分身 `avatar`、**老师配置平台** `publish`、收益 `earnings`、学员 `students`、服务定价 `pricing`、排期 `schedule` |
-| **管理后台** | `/admin` | 总览、用户 `users`、审核 `review`、合规 `compliance`、支付 `payments`、内容 `content`、培训 `training` |
+| 端           | 入口       | 主要页面                                                                                                                                                                                                                  |
+| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **学生端**   | `/`        | 首页、老师库 `/teachers`、老师详情 `/teachers/$id`、AI 文字对练 `/chat/$teacherId`、**视频面试间** `/video/$teacherId`、预约 1v1 `/booking/$teacherId`、评估报告 `/report/$sessionId`、个人中心 `/me`、成长追踪 `/growth` |
+| **老师端**   | `/teacher` | 工作台、数据分析 `analytics`、AI 分身 `avatar`、**老师配置平台** `publish`、收益 `earnings`、学员 `students`、服务定价 `pricing`、排期 `schedule`                                                                         |
+| **管理后台** | `/admin`   | 总览、用户 `users`、审核 `review`、合规 `compliance`、支付 `payments`、内容 `content`、培训 `training`                                                                                                                    |
 
 > 本仓库目前使用 `src/mock/*` 提供 Mock 数据，后端接口接入后逐步替换。
 
@@ -60,11 +60,11 @@ bun run format
 
 复制 `.env.example` 为 `.env.local` 并填入：
 
-| 变量 | 说明 | 必填 |
-|---|---|---|
-| `DASHSCOPE_API_KEY` | 阿里云 DashScope API Key（驱动 AI 面试官） | ✅ 启用真实 AI |
-| `QWEN_MODELS` | 候选模型列表，逗号分隔，按序自动切换（如 `qwen3-max,qwen-plus`） | 可选 |
-| `HEYGEN_API_KEY` | HeyGen API Key（驱动数字人视频面试间） | ✅ 启用视频模式 |
+| 变量                | 说明                                                             | 必填            |
+| ------------------- | ---------------------------------------------------------------- | --------------- |
+| `DASHSCOPE_API_KEY` | 阿里云 DashScope API Key（驱动 AI 面试官）                       | ✅ 启用真实 AI  |
+| `QWEN_MODELS`       | 候选模型列表，逗号分隔，按序自动切换（如 `qwen3-max,qwen-plus`） | 可选            |
+| `HEYGEN_API_KEY`    | HeyGen API Key（驱动数字人视频面试间）                           | ✅ 启用视频模式 |
 
 > 无密钥时自动降级：AI 面试官走打桩模拟回复；视频面试间显示「未配置」提示，可切回文字聊天室。
 
@@ -127,6 +127,7 @@ bun run scripts/interview-repl.ts --live
 ```
 
 核心设计：
+
 - **`InterviewClient` 接口**：`start / reply / finish / resume`，Mock ↔ 真实 API ↔ 后端三种实现可互换，UI 零改动。
 - **断点续连**：每回合先落 `localStorage`，刷新/关页后进入聊天室自动提示「继续上次」。
 - **事件日志**：每回合 append-only 记录，含模型 id / 提示词版本 / 延迟，可离线复盘与再训练。
@@ -135,14 +136,14 @@ bun run scripts/interview-repl.ts --live
 
 使用 **TanStack Router 文件路由**，每个 `.tsx` 即一个路由。请勿创建 `src/pages/`、Next.js / Remix 风格目录。
 
-| 文件 | URL |
-|---|---|
-| `index.tsx` | `/` |
-| `teachers.index.tsx` | `/teachers` |
-| `teachers.$id.tsx` | `/teachers/:id` |
-| `chat.$teacherId.tsx` | `/chat/:teacherId` |
+| 文件                   | URL                 |
+| ---------------------- | ------------------- |
+| `index.tsx`            | `/`                 |
+| `teachers.index.tsx`   | `/teachers`         |
+| `teachers.$id.tsx`     | `/teachers/:id`     |
+| `chat.$teacherId.tsx`  | `/chat/:teacherId`  |
 | `video.$teacherId.tsx` | `/video/:teacherId` |
-| `teacher.publish.tsx` | `/teacher/publish` |
+| `teacher.publish.tsx`  | `/teacher/publish`  |
 
 > `src/routeTree.gen.ts` 自动生成，**不要手改**，提交时一并带上。
 
@@ -154,11 +155,11 @@ bun run scripts/interview-repl.ts --live
 - push 的 commit 会自动同步回 Lovable 编辑器，保持分支可用状态。
 - `@lovable.dev/vite-tanstack-config` 已接管 Vite 配置，**不要重复添加** tanstackStart / tailwind 等插件。
 
-| 级别 | 范围 |
-|---|---|
+| 级别      | 范围                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------- |
 | ✅ 随便改 | `src/routes/**`、`src/components/**`、`src/mock/**`、`src/agent/**`、`src/media/**`、`src/styles.css` |
-| ⚠️ 小心 | `package.json` 依赖版本、`vite.config.ts`（改完本地 `bun run build` 验证） |
-| 🚫 别碰 | `.lovable/` 目录、`AGENTS.md` 的 `LOVABLE:BEGIN/END` 块、已推送的 Git 历史 |
+| ⚠️ 小心   | `package.json` 依赖版本、`vite.config.ts`（改完本地 `bun run build` 验证）                            |
+| 🚫 别碰   | `.lovable/` 目录、`AGENTS.md` 的 `LOVABLE:BEGIN/END` 块、已推送的 Git 历史                            |
 
 ## License
 

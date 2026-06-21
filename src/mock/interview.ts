@@ -305,22 +305,21 @@ export function defaultHandoffPolicy(): HandoffPolicy {
 // 这里预填 t-007 以酪的 stock 配置，其余老师暂不开启视频（video 缺省 = 无入口）。
 // ──────────────────────────────────────────────────────────────────────────
 
-// HeyGen 公共 stock avatar（无需本人形象）：
-// 访问 https://labs.heygen.com/interactive-avatar 点"Select Avatar"可查 ID。
-// 以下 ID 仅供占位，接入时替换为实际可用 ID。
+// HeyGen stock avatar + 真实 voiceId（2026-06 经 API 确认）
+// avatarId: Sophia_public_20240320（穿正装，适合面试场景）
+// voiceId: de6ad44022104ac0872392d1139e9364 = Xiaoxin - Professional（中文女声，支持 IA）
+// 备选 voiceId: 8a44173a27984487b3fa86e56004218c = Xiaowen - Cheerful
 const STOCK_AVATAR_ZH_FEMALE: TeacherVideoConfig = {
   provider: "heygen",
-  // TODO: 替换为实际 HeyGen stock 中文女性 avatar ID（labs.heygen.com → Interactive Avatar）
-  avatarId: "Anna_public_3_20240108",
+  avatarId: "Sophia_public_20240320",
   isPersonalAvatar: false,
   voice: {
-    // TODO: 替换为 HeyGen 中文女声 voiceId（HeyGen 语音库 → 中文女声）
-    voiceId: "2d5b0e6664724a1f0fada7c9ad69fc26",
+    voiceId: "de6ad44022104ac0872392d1139e9364", // Xiaoxin - Professional（中文女声）
     rate: 1.0,
   },
   voiceByLang: {
-    zh: { voiceId: "2d5b0e6664724a1f0fada7c9ad69fc26", rate: 1.0 },
-    en: { voiceId: "2d5b0e6664724a1f0fada7c9ad69fc26", rate: 0.95 },
+    zh: { voiceId: "de6ad44022104ac0872392d1139e9364", rate: 1.0 },
+    en: { voiceId: "de6ad44022104ac0872392d1139e9364", rate: 0.95 },
   },
   quality: "medium",
   background: { type: "color", value: "#0A1628" },

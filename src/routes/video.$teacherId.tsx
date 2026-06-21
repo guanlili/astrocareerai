@@ -302,7 +302,20 @@ function VideoPage() {
           setBusy(true);
 
           try {
-            const { session: nextSess, message } = await agent.reply(sess.id, text);
+            const { session: nextSess, message } = await agent.reply(sess.id, text, {
+              // 传递 clientTurn 用于幂等（§7.8.4）
+              clientTurn: sess.turn,
+            });
+            // 标记本回合消息为 voice 模态（§5.2 事件日志区分）
+            const lastAiMsg = nextSess.messages.at(-1);
+            if (lastAiMsg && lastAiMsg.role === "ai") {
+              lastAiMsg.modality = "voice";
+            }
+            const lastUserMsg = nextSess.messages.findLast((m) => m.role === "user");
+            if (lastUserMsg) {
+              lastUserMsg.modality = "voice";
+              lastUserMsg.media = { asrConfidence: confidence };
+            }
             setSession(nextSess);
             if (message.feedback) setLatestFeedback(message.feedback);
 
