@@ -48,8 +48,10 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  /* Tailwind 软悬停色 = 软蓝（解耦：裸 var(--accent) 仍是电光蓝） */
-  --color-accent: var(--accent-soft);
+  /* 强调色 = 电光蓝：bg-accent / text-accent / border-accent 统一为电光蓝。
+     解耦成 --accent-soft 会把所有实心填充（按钮/徽章/logo）+白字变成不可读的浅紫蓝，
+     故回退。若要软悬停，改用 hover:bg-accent/15 等透明度，不要全局换 token。 */
+  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
@@ -300,9 +302,6 @@
   letter-spacing: 0.14em;
   color: var(--label);
   text-transform: uppercase;
-}
-.cn {
-  font-family: var(--font-cn);
 }
 .font-ui {
   font-family: var(--font-ui);
@@ -617,11 +616,12 @@
 }
 
 /* ============================================================
-   Signal 硬边：全站直角，仅头像保持圆形。
-   用 !important 强制压住 Tailwind 的 rounded-full / rounded-[...] 等
-   utility（核心设计规则，等价于全局 reset）。头像选择器特异性更高
-  （img[class*=…] = 0,1,1 > .rounded-full = 0,1,0）且同样 !important，
-   故任意 <img> 仍保持圆形。
+   Signal 硬边：全站去圆角，仅头像与功能性圆形控件保留正圆。
+   用 !important 压住 Tailwind 的 rounded-* utility（核心设计规则）。
+   - 表单原语（开关 / 单选 / 复选，含开关拇指）按 role 放行，避免把
+     Switch 拍平、把 Radio 变成方块（与 Checkbox 混淆）；
+   - 头像仅放行显式 rounded-full 的 <img> 与 .avatar。
+   放行规则写在 nuke 之后，靠源序 + 同等特异性取胜。
    ============================================================ */
 
 /* 第三方库自带圆角（不走 Tailwind rounded-*）也一并拍平 */
@@ -654,8 +654,18 @@
 [class*="rounded-["] {
   border-radius: 0 !important;
 }
-/* 头像（凡是带圆角类的 <img>）保持圆形 */
-img[class*="rounded-"],
+/* 功能性圆形控件保留正圆：开关（含内部拇指）/ 单选 / 复选。
+   装饰性 rounded-full（药丸标签等）仍按 Signal 拍平为直角。 */
+[role="switch"],
+[role="switch"] *,
+[role="radio"],
+[role="checkbox"],
+input[type="checkbox"],
+input[type="radio"] {
+  border-radius: 9999px !important;
+}
+/* 头像：仅显式 rounded-full 的 <img> 与 .avatar 保持正圆 */
+img.rounded-full,
 .avatar {
   border-radius: 9999px !important;
 }

@@ -50,7 +50,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`cn px-4 py-2 text-sm font-semibold transition-colors ${
+                  className={`font-cn px-4 py-2 text-sm font-semibold transition-colors ${
                     active
                       ? "bg-ink text-paper"
                       : "text-[var(--text-muted)] hover:bg-surface-2 hover:text-ink"
@@ -84,15 +84,16 @@ export function StudentShell({ children }: { children: ReactNode }) {
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="font-ui text-lg font-bold">面镜 MirrorHire</div>
-            <p className="cn mt-2 max-w-md text-sm leading-relaxed text-[var(--text-muted)]">
-              以老师 IP 为核心的 AI 数字分身面试辅导平台。让每位求职者拥有专属导师，让优秀经验规模化传承。
+            <p className="font-cn mt-2 max-w-md text-sm leading-relaxed text-[var(--text-muted)]">
+              以老师 IP 为核心的 AI
+              数字分身面试辅导平台。让每位求职者拥有专属导师，让优秀经验规模化传承。
             </p>
             <div className="mt-4 inline-flex items-center gap-2 border-2 border-ink bg-surface-2 px-3 py-1 font-ui text-[11px] uppercase tracking-wider text-ink">
               <span className="h-1.5 w-1.5 bg-accent" />
               AI 生成内容已按《暂行办法》标识
             </div>
           </div>
-          <div className="cn text-sm">
+          <div className="font-cn text-sm">
             <div className="mb-3 font-semibold">产品</div>
             <ul className="space-y-2 text-[var(--text-muted)]">
               <li>找老师</li>
@@ -101,7 +102,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
               <li>1v1 预约</li>
             </ul>
           </div>
-          <div className="cn text-sm">
+          <div className="font-cn text-sm">
             <div className="mb-3 font-semibold">公司</div>
             <ul className="space-y-2 text-[var(--text-muted)]">
               <li>入驻老师</li>

@@ -12,7 +12,6 @@ export type Testimonial = {
   afterScore: number;
   weeks: number;
   teacherId: string;
-  accent: "orange" | "pink" | "mint" | "purple" | "amber";
 };
 
 const av = (seed: string, bg: string) =>
@@ -31,7 +30,6 @@ export const testimonials: Testimonial[] = [
     afterScore: 86,
     weeks: 3,
     teacherId: "t-001",
-    accent: "orange",
   },
   {
     id: "tm-002",
@@ -45,7 +43,6 @@ export const testimonials: Testimonial[] = [
     afterScore: 88,
     weeks: 2,
     teacherId: "t-003",
-    accent: "mint",
   },
   {
     id: "tm-003",
@@ -58,7 +55,6 @@ export const testimonials: Testimonial[] = [
     afterScore: 90,
     weeks: 4,
     teacherId: "t-005",
-    accent: "pink",
   },
   {
     id: "tm-004",
@@ -72,7 +68,6 @@ export const testimonials: Testimonial[] = [
     afterScore: 92,
     weeks: 5,
     teacherId: "t-004",
-    accent: "purple",
   },
   {
     id: "tm-005",
@@ -86,7 +81,6 @@ export const testimonials: Testimonial[] = [
     afterScore: 84,
     weeks: 3,
     teacherId: "t-007",
-    accent: "amber",
   },
   {
     id: "tm-006",
@@ -100,7 +94,6 @@ export const testimonials: Testimonial[] = [
     afterScore: 89,
     weeks: 6,
     teacherId: "t-002",
-    accent: "pink",
   },
 ];
 

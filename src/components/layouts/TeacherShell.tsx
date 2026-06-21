@@ -70,7 +70,7 @@ export function TeacherShell({
               <Link
                 key={it.to}
                 to={it.to}
-                className={`cn flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors ${
+                className={`font-cn flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors ${
                   active
                     ? "bg-ink text-paper"
                     : "text-[var(--text-muted)] hover:bg-surface-2 hover:text-ink"
@@ -85,8 +85,10 @@ export function TeacherShell({
         <div className="border-t-2 border-ink p-4">
           <div className="border-2 border-ink bg-surface-2 p-3">
             <div className="font-ui text-[10px] uppercase tracking-widest text-label">分身状态</div>
-            <div className={`cn mt-1 text-sm font-semibold ${sm.cls}`}>{sm.label}</div>
-            <div className="cn mt-1 font-mono text-[11px] text-[var(--text-muted)]">{sm.sub}</div>
+            <div className={`font-cn mt-1 text-sm font-semibold ${sm.cls}`}>{sm.label}</div>
+            <div className="font-cn mt-1 font-mono text-[11px] text-[var(--text-muted)]">
+              {sm.sub}
+            </div>
           </div>
         </div>
       </aside>
@@ -94,9 +96,11 @@ export function TeacherShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b-2 border-ink bg-paper px-6">
           <div className="min-w-0">
-            <h1 className="cn truncate font-ui text-lg font-bold tracking-tight">{title}</h1>
+            <h1 className="font-cn truncate font-ui text-lg font-bold tracking-tight">{title}</h1>
             {subtitle && (
-              <p className="cn truncate font-mono text-xs text-[var(--text-muted)]">{subtitle}</p>
+              <p className="font-cn truncate font-mono text-xs text-[var(--text-muted)]">
+                {subtitle}
+              </p>
             )}
           </div>
           <div className="ml-auto flex items-center gap-3">

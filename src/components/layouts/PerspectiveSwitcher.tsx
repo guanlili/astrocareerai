@@ -33,7 +33,7 @@ export function PerspectiveSwitcher() {
           <Link
             key={o.to}
             to={o.to}
-            className={`cn flex items-center gap-3 px-3 py-2 text-sm transition-colors ${
+            className={`font-cn flex items-center gap-3 px-3 py-2 text-sm transition-colors ${
               o.label === current.label
                 ? "bg-ink text-paper"
                 : "text-[var(--text-muted)] hover:bg-accent hover:text-ink"
@@ -46,8 +46,9 @@ export function PerspectiveSwitcher() {
             )}
           </Link>
         ))}
-        <div className="cn mt-1 border-t-2 border-ink px-3 py-2 text-[11px] text-[var(--text-muted)]">
-          <Users className="mr-1 inline h-3 w-3" /> 学员 · <Bot className="mx-1 inline h-3 w-3" /> 老师
+        <div className="font-cn mt-1 border-t-2 border-ink px-3 py-2 text-[11px] text-[var(--text-muted)]">
+          <Users className="mr-1 inline h-3 w-3" /> 学员 · <Bot className="mx-1 inline h-3 w-3" />{" "}
+          老师
         </div>
       </div>
     </div>

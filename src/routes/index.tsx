@@ -1,15 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Bot,
-  MessageSquare,
-  Target,
-  Users,
-  Star,
-  TrendingUp,
-  CheckCircle2,
-  GraduationCap,
-} from "lucide-react";
+import { ArrowRight, Star, TrendingUp, CheckCircle2, GraduationCap } from "lucide-react";
 import { StudentShell } from "@/components/layouts/StudentShell";
 import { teachers } from "@/mock/teachers";
 import { reportData, growthTrend } from "@/mock/sessions";
@@ -36,14 +26,12 @@ const FEATURES = [
     t: "老师专属知识库",
     en: "Private knowledge base",
     d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。",
-    icon: Bot,
   },
   {
     no: "02",
     t: "动态追问 ≠ 题库",
     en: "Adaptive follow-ups",
     d: "AI 基于上一轮回答生成下一题，告别固定脚本，逼近真实终面压力。",
-    icon: MessageSquare,
     fill: true,
   },
   {
@@ -51,14 +39,12 @@ const FEATURES = [
     t: "六维可追溯评估",
     en: "Traceable scoring",
     d: "雷达图分数可下钻到对话片段，不是黑盒打分。",
-    icon: Target,
   },
   {
     no: "04",
     t: "AI + 真人闭环",
     en: "Human-in-the-loop",
     d: "AI 处理 80% 重复问题，触发条件自动转人工。",
-    icon: Users,
   },
 ];
 
@@ -79,8 +65,9 @@ function Home() {
             <br />
             <span className="accent">随身专属导师</span>
           </h1>
-          <p className="cn mt-7 max-w-[520px] text-[17px] leading-[1.7] text-[var(--text-muted)]">
-            入驻老师 100% 来自一线企业面试官。AI 分身基于专属知识库结构化追问，覆盖简历优化、模拟面试与能力评估，关键时刻一键转人工 1v1。
+          <p className="font-cn mt-7 max-w-[520px] text-[17px] leading-[1.7] text-[var(--text-muted)]">
+            入驻老师 100% 来自一线企业面试官。AI
+            分身基于专属知识库结构化追问，覆盖简历优化、模拟面试与能力评估，关键时刻一键转人工 1v1。
           </p>
           <div className="btn-group mt-9">
             <Link to="/teachers" className="btn btn-accent">
@@ -195,10 +182,7 @@ function Home() {
             <br />
             挑你的<span className="accent">面试教练</span>
           </h2>
-          <Link
-            to="/teachers"
-            className="btn btn-paper hidden items-center gap-2 sm:inline-flex"
-          >
+          <Link to="/teachers" className="btn btn-paper hidden items-center gap-2 sm:inline-flex">
             查看全部 186 位老师 <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -276,9 +260,11 @@ function Home() {
                 return (
                   <div key={d.name}>
                     <div className="mb-1 flex items-center justify-between text-sm">
-                      <span className="cn font-medium">{d.name}</span>
+                      <span className="font-cn font-medium">{d.name}</span>
                       <span className="flex items-center gap-2 font-mono">
-                        <span className="text-xs text-[var(--text-muted)] line-through">{d.prev}</span>
+                        <span className="text-xs text-[var(--text-muted)] line-through">
+                          {d.prev}
+                        </span>
                         <span className="font-bold">{d.score}</span>
                         <span
                           className={`px-1.5 py-0.5 text-[10px] font-bold ${
@@ -292,10 +278,7 @@ function Home() {
                       </span>
                     </div>
                     <div className="h-3 w-full bg-[var(--surface-2)]">
-                      <div
-                        className="h-full bg-[var(--accent)]"
-                        style={{ width: `${d.score}%` }}
-                      />
+                      <div className="h-full bg-[var(--accent)]" style={{ width: `${d.score}%` }} />
                     </div>
                   </div>
                 );
@@ -309,14 +292,16 @@ function Home() {
               <div className="flex items-center gap-2 text-lg font-bold">
                 <TrendingUp className="h-5 w-5 text-[var(--accent)]" /> 七周成长曲线
               </div>
-              <p className="cn mb-4 text-xs text-[var(--text-muted)]">每周综合分 · 持续上扬</p>
+              <p className="font-cn mb-4 text-xs text-[var(--text-muted)]">每周综合分 · 持续上扬</p>
               <div className="flex h-32 items-end justify-between gap-2">
                 {growthTrend.map((g, i) => (
                   <div key={g.week} className="flex flex-1 flex-col items-center gap-1.5">
                     <div className="flex w-full flex-1 items-end">
                       <div
                         className={`w-full ${
-                          i === growthTrend.length - 1 ? "bg-[var(--accent-lite)]" : "bg-[var(--ink)]"
+                          i === growthTrend.length - 1
+                            ? "bg-[var(--accent-lite)]"
+                            : "bg-[var(--ink)]"
                         }`}
                         style={{ height: `${Math.max(24, g.score)}%` }}
                         title={`${g.week}: ${g.score}`}
@@ -327,7 +312,7 @@ function Home() {
                 ))}
               </div>
               <div className="mt-4 flex items-center justify-between bg-[var(--ink)] px-4 py-2.5 text-white">
-                <span className="cn text-xs font-medium">7 周综合分提升</span>
+                <span className="font-cn text-xs font-medium">7 周综合分提升</span>
                 <span className="font-mono text-lg font-bold text-[var(--accent-lite)]">
                   {growthTrend[0].score} → {growthTrend.at(-1)!.score}
                 </span>
@@ -340,7 +325,7 @@ function Home() {
                 {reportData.highlights.map((h) => (
                   <li key={h} className="flex items-start gap-2 text-sm leading-relaxed">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
-                    <span className="cn">{h}</span>
+                    <span className="font-cn">{h}</span>
                   </li>
                 ))}
               </ul>
@@ -376,7 +361,7 @@ function Home() {
                 </div>
               </div>
 
-              <blockquote className="cn mt-4 flex-1 text-sm leading-relaxed text-[var(--text)]">
+              <blockquote className="font-cn mt-4 flex-1 text-sm leading-relaxed text-[var(--text)]">
                 “{tm.quote}”
               </blockquote>
 
@@ -416,8 +401,8 @@ function Home() {
 
       {/* 小注脚 */}
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-6 py-6 text-xs text-[var(--label)]">
-        <GraduationCap className="h-3.5 w-3.5" /> 新用户首节模拟面试免费 · 无需下载 · 186+ 认证老师 ·
-        数据可复盘可追溯
+        <GraduationCap className="h-3.5 w-3.5" /> 新用户首节模拟面试免费 · 无需下载 · 186+ 认证老师
+        · 数据可复盘可追溯
       </div>
     </StudentShell>
   );
