@@ -25,9 +25,9 @@ const items: { to: string; label: string; icon: LucideIcon; exact?: boolean }[] 
 ] as const;
 
 const STATUS_META: Record<PublishStatus, { label: string; sub: string; cls: string }> = {
-  draft: { label: "草稿中", sub: "尚未发布到学生端", cls: "text-muted-foreground" },
-  published: { label: "已发布", sub: "学生端可见可选", cls: "text-success" },
-  unpublished: { label: "已下架", sub: "学生端已不可见", cls: "text-warning" },
+  draft: { label: "草稿中", sub: "尚未发布到学生端", cls: "text-[var(--text-muted)]" },
+  published: { label: "已发布", sub: "学生端可见可选", cls: "text-[var(--accent)]" },
+  unpublished: { label: "已下架", sub: "学生端已不可见", cls: "text-[var(--warning)]" },
 };
 
 export function TeacherShell({
@@ -47,18 +47,15 @@ export function TeacherShell({
   useEffect(() => setStatus(getStudio().status), []);
   const sm = STATUS_META[status];
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur-2xl md:flex">
-        <Link
-          to="/teacher"
-          className="flex h-[72px] items-center gap-2 border-b border-sidebar-border px-5"
-        >
-          <div className="grid h-9 w-9 place-items-center rounded-xl gradient-primary shadow-elevate">
-            <span className="font-display text-sm font-bold text-primary-foreground">面</span>
+    <div className="flex min-h-screen w-full bg-paper">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-ink bg-paper md:flex">
+        <Link to="/teacher" className="flex h-[72px] items-center gap-3 border-b-2 border-ink px-5">
+          <div className="grid h-9 w-9 place-items-center bg-accent font-cn text-sm font-bold text-white">
+            面
           </div>
           <div className="leading-tight">
-            <div className="font-display text-sm font-semibold">面镜 · 老师工作台</div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <div className="font-ui text-sm font-bold text-ink">面镜 · 老师工作台</div>
+            <div className="font-ui text-[10px] uppercase tracking-[0.16em] text-label">
               Mentor Studio
             </div>
           </div>
@@ -73,10 +70,10 @@ export function TeacherShell({
               <Link
                 key={it.to}
                 to={it.to}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                className={`cn flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors ${
                   active
-                    ? "bg-card text-foreground shadow-sm ring-1 ring-black/5"
-                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+                    ? "bg-ink text-paper"
+                    : "text-[var(--text-muted)] hover:bg-surface-2 hover:text-ink"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -85,23 +82,21 @@ export function TeacherShell({
             );
           })}
         </nav>
-        <div className="border-t border-sidebar-border p-4">
-          <div className="rounded-md border border-gold/30 bg-gold/10 p-3">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-gold">
-              分身状态
-            </div>
-            <div className={`mt-1 text-sm font-medium ${sm.cls}`}>{sm.label}</div>
-            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{sm.sub}</div>
+        <div className="border-t-2 border-ink p-4">
+          <div className="border-2 border-ink bg-surface-2 p-3">
+            <div className="font-ui text-[10px] uppercase tracking-widest text-label">分身状态</div>
+            <div className={`cn mt-1 text-sm font-semibold ${sm.cls}`}>{sm.label}</div>
+            <div className="cn mt-1 font-mono text-[11px] text-[var(--text-muted)]">{sm.sub}</div>
           </div>
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-border/70 bg-background/75 px-6 backdrop-blur-2xl">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b-2 border-ink bg-paper px-6">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-lg font-semibold">{title}</h1>
+            <h1 className="cn truncate font-ui text-lg font-bold tracking-tight">{title}</h1>
             {subtitle && (
-              <p className="truncate font-mono text-xs text-muted-foreground">{subtitle}</p>
+              <p className="cn truncate font-mono text-xs text-[var(--text-muted)]">{subtitle}</p>
             )}
           </div>
           <div className="ml-auto flex items-center gap-3">
@@ -112,7 +107,7 @@ export function TeacherShell({
         {/* 移动端水平导航：小屏下侧栏不可见时的替代入口，可横向滚动 */}
         <nav
           aria-label="老师工作台导航"
-          className="flex gap-1.5 overflow-x-auto border-b border-border/70 bg-background/75 px-5 py-2 backdrop-blur-2xl sm:px-7 md:hidden"
+          className="flex gap-1.5 overflow-x-auto border-b-2 border-ink bg-paper px-5 py-2 sm:px-7 md:hidden"
         >
           {items.map((it) => {
             const active = it.exact
@@ -124,10 +119,10 @@ export function TeacherShell({
                 key={it.to}
                 to={it.to}
                 aria-current={active ? "page" : undefined}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 border-2 px-3 py-1.5 text-xs font-semibold transition-colors ${
                   active
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card/70 text-muted-foreground"
+                    ? "border-ink bg-ink text-paper"
+                    : "border-ink bg-surface text-[var(--text-muted)]"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />

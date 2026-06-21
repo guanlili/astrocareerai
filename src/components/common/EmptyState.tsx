@@ -16,7 +16,7 @@ export function EmptyState({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface/20 px-6 py-12 text-center ${
+      className={`flex flex-col items-center justify-center border-2 border-dashed border-ink bg-surface-2 px-6 py-12 text-center ${
         className ?? ""
       }`}
     >
