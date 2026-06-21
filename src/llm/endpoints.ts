@@ -75,35 +75,33 @@ const PROBE_TTL_MS = 60_000;
  * 连得上 → enabled:true（显示模型名）；无 key / 鉴权失败 / 额度不足 / 网络异常
  * → enabled:false（前端显示「演示模式」）。
  */
-export const llmStatus = createServerFn({ method: "GET" }).handler(
-  async (): Promise<LlmStatus> => {
-    const key = readKey();
-    const maskedKey = maskSecret(key);
-    const candidates = orderedModels();
-    const firstModel = candidates[0] ?? "qwen-plus";
+export const llmStatus = createServerFn({ method: "GET" }).handler(async (): Promise<LlmStatus> => {
+  const key = readKey();
+  const maskedKey = maskSecret(key);
+  const candidates = orderedModels();
+  const firstModel = candidates[0] ?? "qwen-plus";
 
-    if (!key) return { enabled: false, model: firstModel, maskedKey, reason: "未配置密钥" };
-    if (probeCache && Date.now() - probeCache.at < PROBE_TTL_MS) {
-      return probeCache.result;
-    }
+  if (!key) return { enabled: false, model: firstModel, maskedKey, reason: "未配置密钥" };
+  if (probeCache && Date.now() - probeCache.at < PROBE_TTL_MS) {
+    return probeCache.result;
+  }
 
-    let result: LlmStatus;
-    try {
-      // 极小探活请求：max_tokens 很小、不强制 JSON，尽量省 token；按候选列表轮换
-      const probe = makeClient({ maxTokens: 8, jsonMode: false });
-      await probe.complete({ system: "ping", messages: [{ role: "user", content: "ping" }] });
-      remember(probe);
-      // 显示实际连通的模型
-      result = { enabled: true, model: probe.lastUsedModel ?? firstModel, maskedKey };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      console.warn(`[llm] 健康探测失败 (key=${maskedKey}):`, msg);
-      result = { enabled: false, model: firstModel, maskedKey, reason: msg.slice(0, 140) };
-    }
-    probeCache = { at: Date.now(), result };
-    return result;
-  },
-);
+  let result: LlmStatus;
+  try {
+    // 极小探活请求：max_tokens 很小、不强制 JSON，尽量省 token；按候选列表轮换
+    const probe = makeClient({ maxTokens: 8, jsonMode: false });
+    await probe.complete({ system: "ping", messages: [{ role: "user", content: "ping" }] });
+    remember(probe);
+    // 显示实际连通的模型
+    result = { enabled: true, model: probe.lastUsedModel ?? firstModel, maskedKey };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`[llm] 健康探测失败 (key=${maskedKey}):`, msg);
+    result = { enabled: false, model: firstModel, maskedKey, reason: msg.slice(0, 140) };
+  }
+  probeCache = { at: Date.now(), result };
+  return result;
+});
 
 /** 老师入驻：分析履历/素材，产出用于配置分身的结构化 JSON（前端再解析填充表单）。 */
 export const analyzeTeacherMaterial = createServerFn({ method: "POST" })

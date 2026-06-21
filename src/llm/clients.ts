@@ -36,10 +36,7 @@ export class FallbackModelClient implements ModelClient {
     try {
       return await this.primary.complete(input);
     } catch (e) {
-      console.warn(
-        "[llm] 主模型调用失败，回退打桩：",
-        e instanceof Error ? e.message : e,
-      );
+      console.warn("[llm] 主模型调用失败，回退打桩：", e instanceof Error ? e.message : e);
       return this.fallback.complete(input);
     }
   }

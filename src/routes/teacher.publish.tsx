@@ -83,7 +83,9 @@ function PublishPage() {
 
   useEffect(() => setPublished(getPublishedTeachers()), []);
   useEffect(() => {
-    llmStatus().then(setLlm).catch(() => setLlm({ enabled: false, model: "", maskedKey: "" }));
+    llmStatus()
+      .then(setLlm)
+      .catch(() => setLlm({ enabled: false, model: "", maskedKey: "" }));
   }, []);
 
   async function onAnalyze() {
@@ -114,26 +116,24 @@ function PublishPage() {
         domains: j.domains?.length ? j.domains.join(", ") : f.domains,
         background: j.background || f.background,
         bio: j.background || f.bio,
-        questions: j.suggestedQuestions?.length
-          ? j.suggestedQuestions.join("\n")
-          : f.questions,
+        questions: j.suggestedQuestions?.length ? j.suggestedQuestions.join("\n") : f.questions,
       }));
       setAnalyzeMsg("已根据素材自动填充，可继续微调后发布。");
     } catch (e) {
-      setAnalyzeMsg(
-        `分析失败：${e instanceof Error ? e.message : String(e)}（可手动填写后发布）`,
-      );
+      setAnalyzeMsg(`分析失败：${e instanceof Error ? e.message : String(e)}（可手动填写后发布）`);
     } finally {
       setAnalyzing(false);
     }
   }
 
-  const set = (k: keyof typeof SAMPLE, v: string | number) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof typeof SAMPLE, v: string | number) => setForm((f) => ({ ...f, [k]: v }));
 
   function buildEntry(): { profile: Teacher; config: TeacherAvatarConfig } {
     const split = (s: string) =>
-      s.split(/[,，]/).map((x) => x.trim()).filter(Boolean);
+      s
+        .split(/[,，]/)
+        .map((x) => x.trim())
+        .filter(Boolean);
     const tags = split(form.tags);
     const industries = split(form.industries);
     const domains = split(form.domains);
@@ -234,7 +234,10 @@ function PublishPage() {
           {/* AI 素材分析：粘贴履历 → LLM 抽取并填充 */}
           <div className="glass-panel rounded-xl border border-primary/30 p-6">
             <div className="flex items-center justify-between">
-              <SectionTitle title="AI 素材导入分析" desc="粘贴老师履历 / 简介，自动抽取人设与题库" />
+              <SectionTitle
+                title="AI 素材导入分析"
+                desc="粘贴老师履历 / 简介，自动抽取人设与题库"
+              />
               {llm && (
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] ${
@@ -279,7 +282,11 @@ function PublishPage() {
             <SectionTitle title="对外档案" desc="展示在学生端老师库与详情页" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="老师 ID（唯一）">
-                <Input value={form.id} onChange={(e) => set("id", e.target.value)} placeholder="pub-xxx" />
+                <Input
+                  value={form.id}
+                  onChange={(e) => set("id", e.target.value)}
+                  placeholder="pub-xxx"
+                />
               </Field>
               <Field label="姓名">
                 <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
@@ -294,7 +301,10 @@ function PublishPage() {
                 <Input value={form.tags} onChange={(e) => set("tags", e.target.value)} />
               </Field>
               <Field label="行业（逗号分隔）">
-                <Input value={form.industries} onChange={(e) => set("industries", e.target.value)} />
+                <Input
+                  value={form.industries}
+                  onChange={(e) => set("industries", e.target.value)}
+                />
               </Field>
               <Field label="起步价 / 月（¥）">
                 <Input
@@ -326,12 +336,28 @@ function PublishPage() {
           <div className="glass-panel rounded-xl p-6">
             <SectionTitle title="说话风格" desc="映射分身的语气 / 专业度 / 详细度" />
             <Slider3 label="语气" left="严厉" right="温和" value={tone} setValue={setTone} />
-            <Slider3 label="专业度" left="口语化" right="术语化" value={technical} setValue={setTechnical} />
-            <Slider3 label="回答详细度" left="精炼" right="详细" value={detail} setValue={setDetail} />
+            <Slider3
+              label="专业度"
+              left="口语化"
+              right="术语化"
+              value={technical}
+              setValue={setTechnical}
+            />
+            <Slider3
+              label="回答详细度"
+              left="精炼"
+              right="详细"
+              value={detail}
+              setValue={setDetail}
+            />
 
             <div className="mt-2 grid gap-4 sm:grid-cols-2">
               <Field label="主语言">
-                <RadioGroup value={primary} onValueChange={(v) => setPrimary(v as "zh" | "en")} className="flex gap-2">
+                <RadioGroup
+                  value={primary}
+                  onValueChange={(v) => setPrimary(v as "zh" | "en")}
+                  className="flex gap-2"
+                >
                   {(["zh", "en"] as const).map((v) => (
                     <Choice key={v} value={v} label={v === "zh" ? "中文" : "English"} />
                   ))}
@@ -395,7 +421,11 @@ function PublishPage() {
                     key={p.profile.id}
                     className="flex items-center gap-3 rounded-md border border-border bg-surface/40 p-3"
                   >
-                    <img src={p.profile.avatar} alt="" className="h-10 w-10 rounded-lg ring-2 ring-primary/30" />
+                    <img
+                      src={p.profile.avatar}
+                      alt=""
+                      className="h-10 w-10 rounded-lg ring-2 ring-primary/30"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{p.profile.name}</div>
                       <div className="truncate font-mono text-[11px] text-muted-foreground">
