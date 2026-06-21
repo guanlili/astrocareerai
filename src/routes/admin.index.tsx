@@ -36,7 +36,7 @@ export const Route = createFileRoute("/admin/")({
   component: AdminHome,
 });
 
-const PALETTE = ["var(--primary-glow)", "var(--gold)", "var(--chart-2)", "var(--muted-foreground)"];
+const PALETTE = ["var(--accent)", "var(--accent-lite)", "var(--chart-4)", "var(--chart-5)"];
 
 const TASK_TYPE_LABEL: Record<TaskType, string> = {
   review: "入驻审核",
@@ -185,9 +185,9 @@ function AdminHome() {
                 <Area
                   type="monotone"
                   dataKey="newUsers"
-                  stroke="var(--gold)"
-                  fill="var(--gold)"
-                  fillOpacity={0.15}
+                  stroke="var(--chart-4)"
+                  fill="var(--chart-4)"
+                  fillOpacity={0.12}
                   strokeWidth={2}
                 />
               </AreaChart>

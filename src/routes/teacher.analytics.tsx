@@ -40,7 +40,7 @@ const conv = teacherDailyConversations.map((d) => ({
   rate: Math.round((d.paid / d.count) * 100),
 }));
 
-const PALETTE = ["var(--gold)", "var(--primary-glow)", "var(--chart-2)", "var(--destructive)"];
+const PALETTE = ["var(--accent)", "var(--accent-lite)", "var(--chart-4)", "var(--destructive)"];
 
 function AnalyticsPage() {
   // 真实订单派生：管理端退款 / 学员下单 → 这里数字会实时变动（SSR 安全）
@@ -179,8 +179,8 @@ function AnalyticsPage() {
                 contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)" }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="count" name="对话轮次" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="paid" name="付费转化" fill="var(--gold)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" name="对话轮次" fill="var(--primary)" />
+              <Bar dataKey="paid" name="付费转化" fill="var(--accent-lite)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

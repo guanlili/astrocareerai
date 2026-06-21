@@ -623,6 +623,27 @@
   （img[class*=…] = 0,1,1 > .rounded-full = 0,1,0）且同样 !important，
    故任意 <img> 仍保持圆形。
    ============================================================ */
+
+/* 第三方库自带圆角（不走 Tailwind rounded-*）也一并拍平 */
+[data-sonner-toast],
+[data-sonner-toast] *,
+.recharts-tooltip-wrapper,
+.recharts-default-tooltip,
+.recharts-wrapper svg [rx],
+[role="dialog"][data-state] {
+  border-radius: 0 !important;
+}
+/* recharts 曲线/网格描边统一墨黑，数据系列走 chart token */
+.recharts-cartesian-grid line {
+  stroke: var(--ink);
+  stroke-opacity: 0.12;
+}
+.recharts-cartesian-axis-tick text,
+.recharts-text {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
 .rounded-full,
 .rounded-3xl,
 .rounded-2xl,
