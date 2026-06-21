@@ -120,7 +120,7 @@ function TrainingPage() {
                   contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)" }}
                 />
                 <Bar dataKey="queued" stackId="a" fill="var(--primary)" />
-                <Bar dataKey="running" stackId="a" fill="var(--primary-glow)" />
+                <Bar dataKey="running" stackId="a" fill="var(--accent-lite)" />
                 <Bar dataKey="failed" stackId="a" fill="var(--destructive)" />
               </BarChart>
             </ResponsiveContainer>
@@ -131,7 +131,7 @@ function TrainingPage() {
           <SectionTitle title="成功率仪表" />
           <div className="relative mx-auto mt-4 h-44 w-44">
             <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-              <circle cx="50" cy="50" r="42" stroke="var(--border)" strokeWidth="10" fill="none" />
+              <circle cx="50" cy="50" r="42" stroke="var(--chart-5)" strokeWidth="10" fill="none" />
               <circle
                 cx="50"
                 cy="50"
@@ -140,7 +140,7 @@ function TrainingPage() {
                 strokeWidth="10"
                 fill="none"
                 strokeDasharray={`${(kpi.successRate / 100) * 264} 264`}
-                strokeLinecap="round"
+                strokeLinecap="butt"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">

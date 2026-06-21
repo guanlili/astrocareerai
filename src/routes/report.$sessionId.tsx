@@ -200,8 +200,8 @@ function ReportPage() {
                 <Radar
                   name="上次"
                   dataKey="prev"
-                  stroke="var(--gold)"
-                  fill="var(--gold)"
+                  stroke="var(--chart-4)"
+                  fill="var(--chart-4)"
                   fillOpacity={0.15}
                 />
               </RadarChart>
@@ -225,7 +225,7 @@ function ReportPage() {
                   contentStyle={{
                     background: "var(--popover)",
                     border: "1px solid var(--border)",
-                    borderRadius: 8,
+                    borderRadius: 0,
                     color: "var(--foreground)",
                   }}
                 />

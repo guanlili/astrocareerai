@@ -15,27 +15,26 @@ export function KpiCard({
 }) {
   const positive = delta?.startsWith("+");
   return (
-    <div className="glass-panel relative overflow-hidden rounded-xl p-5">
+    <div className="glass-panel relative overflow-hidden p-5">
       <div className="flex items-start justify-between">
-        <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          {label}
-        </div>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
+        <div className="font-mono text-[11px] uppercase tracking-widest text-label">{label}</div>
+        {icon && <div className="text-[var(--text-muted)]">{icon}</div>}
       </div>
       <div className="mt-3 flex items-baseline gap-1">
-        <span className="font-mono text-3xl font-semibold text-foreground">{value}</span>
-        {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
+        <span className="font-mono text-3xl font-bold text-ink">{value}</span>
+        {unit && <span className="text-sm text-[var(--text-muted)]">{unit}</span>}
       </div>
       {delta && (
         <div
-          className={`mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs ${
-            positive ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
+          className={`mt-2 inline-flex items-center gap-1 border-2 border-ink px-2 py-0.5 font-mono text-xs font-bold ${
+            positive
+              ? "bg-[var(--success)]/15 text-[var(--success)]"
+              : "bg-[var(--destructive)]/15 text-[var(--destructive)]"
           }`}
         >
           {delta}
         </div>
       )}
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/15 blur-2xl" />
     </div>
   );
 }
@@ -68,16 +67,16 @@ export function StatusBadge({
   children: ReactNode;
 }) {
   const styles: Record<string, string> = {
-    success: "bg-success/15 text-success ring-success/30",
-    warning: "bg-warning/15 text-warning ring-warning/30",
-    danger: "bg-destructive/15 text-destructive ring-destructive/30",
-    info: "bg-primary/15 text-primary-glow ring-primary/30",
-    neutral: "bg-muted text-muted-foreground ring-border",
-    gold: "bg-gold/15 text-gold ring-gold/40",
+    success: "bg-[var(--success)]/20 text-[var(--success)]",
+    warning: "bg-[var(--warning)]/20 text-[var(--warning)]",
+    danger: "bg-[var(--destructive)]/15 text-[var(--destructive)]",
+    info: "bg-accent/15 text-accent",
+    neutral: "bg-surface-2 text-[var(--text-muted)]",
+    gold: "bg-accent/15 text-accent",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider ring-1 ${styles[tone]}`}
+      className={`inline-flex items-center gap-1 border-2 border-ink px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider ${styles[tone]}`}
     >
       {children}
     </span>

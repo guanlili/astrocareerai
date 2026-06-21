@@ -182,7 +182,11 @@ function BookingPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
             <div className="glass-panel flex gap-5 rounded-xl p-5">
-              <img src={t.avatar} alt="" className="h-20 w-20 rounded-lg ring-2 ring-primary/40" />
+              <img
+                src={t.avatar}
+                alt=""
+                className="h-20 w-20 rounded-full ring-2 ring-primary/40"
+              />
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="font-display text-xl font-semibold">{t.name}</h2>

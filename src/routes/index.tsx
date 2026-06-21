@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, Target, Users, Bot, MessageSquare, Award } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, CheckCircle2, GraduationCap } from "lucide-react";
 import { StudentShell } from "@/components/layouts/StudentShell";
 import { teachers } from "@/mock/teachers";
-import { StatusBadge } from "@/components/common/PanelKit";
+import { reportData, growthTrend } from "@/mock/sessions";
+import { testimonials } from "@/mock/testimonials";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,232 +20,390 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+const FEATURES = [
+  {
+    no: "01",
+    t: "老师专属知识库",
+    en: "Private knowledge base",
+    d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。",
+  },
+  {
+    no: "02",
+    t: "动态追问 ≠ 题库",
+    en: "Adaptive follow-ups",
+    d: "AI 基于上一轮回答生成下一题，告别固定脚本，逼近真实终面压力。",
+    fill: true,
+  },
+  {
+    no: "03",
+    t: "六维可追溯评估",
+    en: "Traceable scoring",
+    d: "雷达图分数可下钻到对话片段，不是黑盒打分。",
+  },
+  {
+    no: "04",
+    t: "AI + 真人闭环",
+    en: "Human-in-the-loop",
+    d: "AI 处理 80% 重复问题，触发条件自动转人工。",
+  },
+];
+
 function Home() {
   const featured = teachers.slice(0, 4);
+  const heroTeacher = teachers[0];
 
   return (
     <StudentShell>
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-32 top-10 h-96 w-96 rounded-full bg-primary/25 blur-3xl" />
-          <div className="absolute right-0 top-40 h-80 w-80 rounded-full bg-gold/10 blur-3xl" />
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(var(--color-foreground) 1px, transparent 1px), linear-gradient(90deg, var(--color-foreground) 1px, transparent 1px)",
-              backgroundSize: "44px 44px",
-            }}
-          />
+      {/* ============================ HERO ============================ */}
+      <section className="mx-auto grid max-w-7xl gap-12 px-6 pb-16 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pt-20">
+        <div>
+          <span className="eyebrow-fill">● Phase 1 — 老师 IP × AI 分身闭环</span>
+          <h1 className="mt-6 text-[clamp(40px,6.5vw,76px)] font-bold leading-[0.98] tracking-[-0.035em]">
+            让每位
+            <br />
+            求职者拥有
+            <br />
+            <span className="accent">随身专属导师</span>
+          </h1>
+          <p className="font-cn mt-7 max-w-[520px] text-[17px] leading-[1.7] text-[var(--text-muted)]">
+            入驻老师 100% 来自一线企业面试官。AI
+            分身基于专属知识库结构化追问，覆盖简历优化、模拟面试与能力评估，关键时刻一键转人工 1v1。
+          </p>
+          <div className="btn-group mt-9">
+            <Link to="/teachers" className="btn btn-accent">
+              立即开始模拟面试 <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/teachers" className="btn btn-paper">
+              浏览老师库
+            </Link>
+          </div>
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-6 pb-20 pt-20 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-primary-glow">
-              <Sparkles className="h-3 w-3" /> Phase 1 · 老师 IP + AI 分身闭环
-            </div>
-            <h1 className="mt-6 font-display text-5xl font-bold leading-[1.1] tracking-tight md:text-6xl">
-              让每位求职者
-              <br />
-              拥有
-              <span className="gradient-text">随身专属导师</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
-              入驻老师 100% 来自一线企业面试官。AI 分身基于老师专属知识库进行结构化追问，
-              支持简历优化、模拟面试、能力评估，关键时刻一键转人工 1v1。
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link
-                to="/teachers"
-                className="inline-flex h-12 items-center gap-2 rounded-full gradient-primary px-7 font-medium text-primary-foreground shadow-elevate transition-transform hover:translate-y-[-1px]"
-              >
-                立即开始模拟面试 <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/teachers"
-                className="inline-flex h-12 items-center gap-2 rounded-full border border-border bg-card px-7 text-sm text-foreground transition-colors hover:bg-accent"
-              >
-                浏览老师库
-              </Link>
-            </div>
-
-            <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border/60 pt-6">
-              {[
-                { k: "186+", v: "认证老师" },
-                { k: "12,408", v: "学员在练" },
-                { k: "68%", v: "终面通过率提升" },
-              ].map((s) => (
-                <div key={s.k}>
-                  <div className="font-mono text-2xl font-semibold text-foreground">{s.k}</div>
-                  <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                    {s.v}
+        {/* demo panel — 位移衬底块 */}
+        <div className="framed mt-4 lg:mt-0">
+          <div className="panel">
+            <div className="panel-head">
+              <div className="who">
+                <img src={heroTeacher.avatar} alt="" className="avatar" />
+                <div>
+                  <div className="nm">{heroTeacher.name} · AI 分身</div>
+                  <div className="st">
+                    <span className="dot" /> 在线 · 模拟面试模式
                   </div>
+                </div>
+              </div>
+              <span className="tagchip">终面 · 字节 PM</span>
+            </div>
+            <div className="chat">
+              <div className="bubble ai">
+                做了创作者激励体系，当时怎么定义「激励是否有效」？为什么不直接看 DAU？
+              </div>
+              <div className="bubble me">
+                我们拆成三层：激励触达率、转化率、长期留存。DAU 易受大盘扰动……
+              </div>
+              <div className="bubble ai">
+                好。换个角度，假设留存涨 2% 但现金成本翻倍，向 leader 汇报你会怎么表达？
+              </div>
+            </div>
+            <div className="scores">
+              {reportData.dimensions.slice(0, 3).map((d) => (
+                <div className="score" key={d.name}>
+                  <div className="k">{d.name}</div>
+                  <div className="v">{d.score}</div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* 仪表盘预览 */}
-          <div className="relative">
-            <div className="glass-panel relative rounded-2xl p-5 shadow-elevate">
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={teachers[0].avatar}
-                    alt=""
-                    className="h-9 w-9 rounded-full ring-2 ring-primary/40"
-                  />
-                  <div>
-                    <div className="text-sm font-medium">{teachers[0].name} · AI 分身</div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-success">
-                      ● 在线 · 模拟面试模式
-                    </div>
-                  </div>
-                </div>
-                <StatusBadge tone="gold">终面 · 字节 PM</StatusBadge>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-surface-2 p-3 text-sm leading-relaxed">
-                  你提到了创作者激励体系，当时怎么定义「激励是否有效」？为什么不直接看 DAU？
-                  <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-gold">
-                    考察：指标拆解 · 业务理解
-                  </div>
-                </div>
-                <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-primary p-3 text-sm text-primary-foreground">
-                  我们拆成三层：激励触达率、转化率、长期留存。DAU 易受大盘扰动……
-                </div>
-                <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-surface-2 p-3 text-sm leading-relaxed">
-                  好。换个角度，假设留存涨 2% 但现金成本翻倍，向 leader 汇报你会怎么表达？
-                  <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-gold">
-                    考察：商业 sense · 决策表达
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border/60 pt-4">
-                {[
-                  { l: "表达逻辑", v: 88 },
-                  { l: "业务理解", v: 85 },
-                  { l: "抗压应变", v: 74 },
-                ].map((d) => (
-                  <div key={d.l} className="rounded-md bg-surface/60 p-2">
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {d.l}
-                    </div>
-                    <div className="mt-1 font-mono text-lg font-semibold text-foreground">
-                      {d.v}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="absolute -bottom-4 -right-4 rounded-lg border border-gold/40 bg-gold/15 px-3 py-2 font-mono text-[11px] text-gold shadow-elevate">
-              ⚡ 首字延迟 1.6s
             </div>
           </div>
         </div>
       </section>
 
-      {/* 价值主张 */}
+      {/* ============================ STATS BAND ============================ */}
+      <section className="stats">
+        <div>
+          <div className="num">
+            186<span className="hl">+</span>
+          </div>
+          <div className="lab">认证老师 · Certified mentors</div>
+        </div>
+        <div>
+          <div className="num">12,408</div>
+          <div className="lab">学员在练 · Active learners</div>
+        </div>
+        <div>
+          <div className="num" style={{ color: "var(--accent-lite)" }}>
+            68%
+          </div>
+          <div className="lab">终面通过率提升 · Pass rate ↑</div>
+        </div>
+      </section>
+
+      {/* ============================ TRUST ============================ */}
+      <section className="trust">
+        <span className="eyebrow-text" style={{ whiteSpace: "nowrap" }}>
+          Mentors from
+        </span>
+        <div className="marks">
+          <span>字节跳动</span>
+          <span>腾讯</span>
+          <span>阿里巴巴</span>
+          <span>美团</span>
+          <span>小红书</span>
+          <span>快手</span>
+        </div>
+      </section>
+
+      {/* ============================ FEATURES ============================ */}
       <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid gap-4 md:grid-cols-4">
-          {[
-            {
-              icon: Bot,
-              t: "老师专属知识库",
-              d: "RAG 严格隔离，分身只用本人素材，不串用其他老师内容。",
-            },
-            {
-              icon: MessageSquare,
-              t: "动态追问 ≠ 题库",
-              d: "AI 基于上一轮回答生成下一题，告别固定脚本。",
-            },
-            { icon: Target, t: "六维可追溯评估", d: "雷达图分数可下钻到对话片段，不是黑盒打分。" },
-            { icon: Users, t: "AI + 真人闭环", d: "AI 处理 80% 重复问题，触发条件自动转人工。" },
-          ].map((f) => (
-            <div key={f.t} className="glass-panel rounded-xl p-5">
-              <div className="grid h-10 w-10 place-items-center rounded-md bg-primary/15 text-primary-glow">
-                <f.icon className="h-5 w-5" />
-              </div>
-              <div className="mt-4 font-medium">{f.t}</div>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{f.d}</p>
+        <div className="sec-head">
+          <h2>
+            不是题库，
+            <br />
+            是会<span className="accent">追问</span>的真实导师
+          </h2>
+          <div className="eyebrow-text">04 capabilities</div>
+        </div>
+        <div className="fgrid">
+          {FEATURES.map((f) => (
+            <div className={`fcard ${f.fill ? "fill" : ""}`} key={f.no}>
+              <div className="no">{f.no}</div>
+              <div className="t">{f.t}</div>
+              <div className="en">{f.en}</div>
+              <p>{f.d}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 老师推荐 */}
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="mb-8 flex items-end justify-between">
-          <div>
-            <div className="font-mono text-[11px] uppercase tracking-widest text-primary-glow">
-              Featured Mentors · 本周精选
-            </div>
-            <h2 className="mt-2 font-display text-3xl font-semibold">
-              <Award className="mr-2 inline h-6 w-6 text-gold" />
-              来自一线的面试官，已数字化
-            </h2>
-          </div>
-          <Link to="/teachers" className="text-sm text-primary-glow hover:underline">
-            查看全部 186 位老师 →
+      {/* ============================ 导师目录预览 ============================ */}
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="sec-head">
+          <h2>
+            像选课一样，
+            <br />
+            挑你的<span className="accent">面试教练</span>
+          </h2>
+          <Link to="/teachers" className="btn btn-paper hidden items-center gap-2 sm:inline-flex">
+            查看全部 186 位老师 <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* L-trick: 容器只给上/左边，单元格给右/下边 → 任意列数都无双线 */}
+        <div className="grid grid-cols-1 border-l-2 border-t-2 border-[var(--ink)] sm:grid-cols-2 lg:grid-cols-4">
           {featured.map((t) => (
             <Link
               to="/teachers/$id"
               params={{ id: t.id }}
               key={t.id}
-              className="group glass-panel relative overflow-hidden rounded-xl p-5 transition-all hover:ring-1 hover:ring-primary/40"
+              className="group flex flex-col border-b-2 border-r-2 border-[var(--ink)] p-5 transition-colors hover:bg-[var(--accent-soft)]"
             >
               <div className="flex items-center gap-3">
-                <img
-                  src={t.avatar}
-                  alt=""
-                  className="h-12 w-12 rounded-full ring-2 ring-primary/30"
-                />
+                <img src={t.avatar} alt="" className="avatar" />
                 <div className="min-w-0">
-                  <div className="truncate font-medium">{t.name}</div>
-                  <div className="truncate font-mono text-[11px] text-muted-foreground">
-                    {t.title}
-                  </div>
+                  <div className="truncate font-bold">{t.name}</div>
+                  <div className="truncate text-[11px] text-[var(--text-muted)]">{t.title}</div>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-1">
+
+              <div className="mt-3 flex flex-wrap gap-1.5">
                 {t.tags.slice(0, 3).map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-accent/60 px-2 py-0.5 text-[11px] text-muted-foreground"
+                    className="border border-[var(--ink)] px-2 py-0.5 font-ui text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
-              <div className="mt-4 flex items-end justify-between border-t border-border/60 pt-3">
+
+              <div className="mt-auto flex items-end justify-between border-t-2 border-[var(--ink)] pt-3">
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <div className="font-ui text-[10px] uppercase tracking-wider text-[var(--label)]">
                     起价
                   </div>
-                  <div className="font-mono text-lg font-semibold text-gold">
+                  <div className="font-mono text-lg font-bold text-[var(--ink)]">
                     ¥{t.startingPrice}
-                    <span className="text-xs text-muted-foreground">/月</span>
+                    <span className="text-xs text-[var(--text-muted)]">/月</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-mono text-sm text-foreground">★ {t.rating}</div>
-                  <div className="font-mono text-[10px] text-muted-foreground">
-                    {t.studentsServed}+ 学员
-                  </div>
+                <div className="flex items-center gap-1 bg-[var(--accent)] px-2 py-0.5 font-mono text-xs font-bold text-white">
+                  <Star className="h-3 w-3 fill-current" /> {t.rating}
                 </div>
               </div>
             </Link>
           ))}
         </div>
       </section>
+
+      {/* ============================ 进度追踪 demo ============================ */}
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="sec-head">
+          <h2>
+            每一次练习，
+            <br />
+            都被认真<span className="accent">量化</span>
+          </h2>
+          <div className="eyebrow-text">traceable progress</div>
+        </div>
+
+        <div className="grid gap-0 border-2 border-[var(--ink)] lg:grid-cols-[1.4fr_1fr]">
+          {/* 维度条 */}
+          <div className="border-b-2 border-[var(--ink)] p-6 lg:border-b-0 lg:border-r-2">
+            <div className="mb-5 flex items-center justify-between">
+              <div className="text-lg font-bold">六维能力拆解</div>
+              <span className="bg-[var(--accent)] px-3 py-1 font-mono text-xs font-bold text-white">
+                综合 {reportData.overall} / 100
+              </span>
+            </div>
+            <div className="space-y-3.5">
+              {reportData.dimensions.map((d, i) => {
+                const delta = d.score - d.prev;
+                return (
+                  <div key={d.name}>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="font-cn font-medium">{d.name}</span>
+                      <span className="flex items-center gap-2 font-mono">
+                        <span className="text-xs text-[var(--text-muted)] line-through">
+                          {d.prev}
+                        </span>
+                        <span className="font-bold">{d.score}</span>
+                        <span
+                          className={`px-1.5 py-0.5 text-[10px] font-bold ${
+                            i === reportData.dimensions.length - 1
+                              ? "bg-[var(--accent-lite)] text-[var(--ink)]"
+                              : "bg-[var(--ink)] text-white"
+                          }`}
+                        >
+                          +{delta}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="h-3 w-full bg-[var(--surface-2)]">
+                      <div className="h-full bg-[var(--accent)]" style={{ width: `${d.score}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 成长曲线 + 高光 */}
+          <div className="flex flex-col">
+            <div className="border-b-2 border-[var(--ink)] p-6">
+              <div className="flex items-center gap-2 text-lg font-bold">
+                <TrendingUp className="h-5 w-5 text-[var(--accent)]" /> 七周成长曲线
+              </div>
+              <p className="font-cn mb-4 text-xs text-[var(--text-muted)]">每周综合分 · 持续上扬</p>
+              <div className="flex h-32 items-end justify-between gap-2">
+                {growthTrend.map((g, i) => (
+                  <div key={g.week} className="flex flex-1 flex-col items-center gap-1.5">
+                    <div className="flex w-full flex-1 items-end">
+                      <div
+                        className={`w-full ${
+                          i === growthTrend.length - 1
+                            ? "bg-[var(--accent-lite)]"
+                            : "bg-[var(--ink)]"
+                        }`}
+                        style={{ height: `${Math.max(24, g.score)}%` }}
+                        title={`${g.week}: ${g.score}`}
+                      />
+                    </div>
+                    <span className="font-mono text-[10px] text-[var(--text-muted)]">{g.week}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between bg-[var(--ink)] px-4 py-2.5 text-white">
+                <span className="font-cn text-xs font-medium">7 周综合分提升</span>
+                <span className="font-mono text-lg font-bold text-[var(--accent-lite)]">
+                  {growthTrend[0].score} → {growthTrend.at(-1)!.score}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-3 text-base font-bold">本周高光</div>
+              <ul className="space-y-2.5">
+                {reportData.highlights.map((h) => (
+                  <li key={h} className="flex items-start gap-2 text-sm leading-relaxed">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                    <span className="font-cn">{h}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================ 学员说 ============================ */}
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="sec-head">
+          <h2>
+            他们练着练着，
+            <br />
+            就拿到了 <span className="accent">offer</span>
+          </h2>
+          <div className="eyebrow-text">student stories</div>
+        </div>
+
+        <div className="grid grid-cols-1 border-l-2 border-t-2 border-[var(--ink)] md:grid-cols-2 lg:grid-cols-3">
+          {testimonials.map((tm) => (
+            <figure
+              key={tm.id}
+              className="flex flex-col border-b-2 border-r-2 border-[var(--ink)] p-6"
+            >
+              <div className="flex items-center gap-3">
+                <img src={tm.avatar} alt="" className="avatar" />
+                <div className="min-w-0">
+                  <div className="truncate font-bold">{tm.name}</div>
+                  <div className="truncate text-xs font-semibold text-[var(--accent)]">
+                    {tm.company} · {tm.role}
+                  </div>
+                </div>
+              </div>
+
+              <blockquote className="font-cn mt-4 flex-1 text-sm leading-relaxed text-[var(--text)]">
+                “{tm.quote}”
+              </blockquote>
+
+              <div className="mt-4 flex items-center justify-between border-t-2 border-[var(--ink)] pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-semibold text-[var(--text-muted)] line-through">
+                    {tm.beforeScore}
+                  </span>
+                  <ArrowRight className="h-3 w-3 text-[var(--text-muted)]" />
+                  <span className="bg-[var(--accent)] px-2 py-0.5 font-mono text-xs font-bold text-white">
+                    {tm.afterScore}
+                  </span>
+                </div>
+                <span className="border border-[var(--ink)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--text-muted)]">
+                  练习 {tm.weeks} 周
+                </span>
+              </div>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      {/* ============================ FINAL CTA ============================ */}
+      <section className="cta-band mx-auto max-w-7xl">
+        <div>
+          <h2>
+            准备好让面试
+            <br />
+            不再靠运气了吗？
+          </h2>
+          <p>Ready to stop leaving interviews to luck? 第一场模拟面试免费。</p>
+        </div>
+        <Link to="/teachers" className="btn btn-hero shrink-0">
+          立即开始 <ArrowRight className="h-4 w-4" />
+        </Link>
+      </section>
+
+      {/* 小注脚 */}
+      <div className="mx-auto flex max-w-7xl items-center gap-2 px-6 py-6 text-xs text-[var(--label)]">
+        <GraduationCap className="h-3.5 w-3.5" /> 新用户首节模拟面试免费 · 无需下载 · 186+ 认证老师
+        · 数据可复盘可追溯
+      </div>
     </StudentShell>
   );
 }

@@ -250,7 +250,7 @@ function MaterialsTab({
             {TRAINING_STAGES.map((s) => (
               <div key={s.name} className="flex items-center gap-4">
                 <div className="w-8">
-                  {s.status === "done" && <CheckCircle2 className="h-5 w-5 text-success" />}
+                  {s.status === "done" && <CheckCircle2 className="h-5 w-5 text-ink" />}
                   {s.status === "running" && (
                     <Loader2 className="h-5 w-5 animate-spin text-primary-glow" />
                   )}
