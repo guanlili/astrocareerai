@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#F3F0E9"/>
+  <rect x="80" y="80" width="920" height="1" fill="#15140E" opacity=".25"/>
+  <text x="80" y="58" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="2">面镜 MIRRORHIRE</text>
+  <text x="1000" y="58" text-anchor="end" fill="#6B675C" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">2026</text>
+  <text x="80" y="390" fill="#2348FF" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="25" font-weight="700" letter-spacing="3">AI 面试辅导平台</text>
+  <text x="70" y="590" fill="#15140E" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="208" font-weight="300" letter-spacing="-13">随身</text>
+  <text x="70" y="790" fill="#2348FF" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="208" font-weight="300" letter-spacing="-13">导师</text>
+  <rect x="80" y="930" width="920" height="1" fill="#15140E" opacity=".25"/>
+  <text x="80" y="982" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="2">真实面试官 × AI 分身</text>
+  <text x="1000" y="982" text-anchor="end" fill="#2348FF" font-family="Arial, sans-serif" font-size="20" font-weight="700">01 / 01</text>
+</svg>

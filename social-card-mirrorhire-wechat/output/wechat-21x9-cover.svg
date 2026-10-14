@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="900" viewBox="0 0 2100 900">
+  <rect width="2100" height="900" fill="#F3F0E9"/>
+  <rect x="80" y="70" width="1940" height="1" fill="#15140E" opacity=".22"/>
+  <text x="80" y="51" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="2">面镜 MIRRORHIRE  ·  产品介绍</text>
+  <text x="1870" y="51" fill="#6B675C" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">AI INTERVIEW COACH</text>
+  <text x="80" y="190" fill="#2348FF" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="24" font-weight="700" letter-spacing="3">老师 IP × AI 数字分身</text>
+  <text x="80" y="340" fill="#15140E" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="112" font-weight="300" letter-spacing="-5">让每位求职者拥有</text>
+  <text x="80" y="465" fill="#15140E" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="112" font-weight="300" letter-spacing="-5">随身<tspan fill="#2348FF">专属导师</tspan></text>
+  <rect x="80" y="540" width="134" height="5" fill="#2348FF"/>
+  <text x="80" y="615" fill="#4A463C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="30" font-weight="400">真实面试官的经验，训练一场会追问、能复盘、</text>
+  <text x="80" y="658" fill="#4A463C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="30" font-weight="400">必要时可转入真人 1v1 的模拟面试。</text>
+  <rect x="80" y="745" width="790" height="1" fill="#15140E" opacity=".25"/>
+  <text x="80" y="792" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="1">专属知识库</text>
+  <text x="325" y="792" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="1">动态追问</text>
+  <text x="540" y="792" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="1">六维评估</text>
+  <text x="730" y="792" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" font-weight="600" letter-spacing="1">AI + 真人</text>
+  <rect x="1130" y="145" width="800" height="625" fill="#15140E"/>
+  <image href="file:///Users/guanhongli/Documents/GitHub/astrocareerAI/public/images/mirrorhire-project-poster-1080x1440.png" x="1100" y="115" width="800" height="625" preserveAspectRatio="xMidYMid slice"/>
+  <rect x="1100" y="115" width="800" height="625" fill="none" stroke="#15140E" stroke-width="3"/>
+  <rect x="1100" y="770" width="800" height="1" fill="#15140E"/>
+  <text x="1100" y="815" fill="#6B675C" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="600" letter-spacing="2">从模拟面试，到可追溯的成长</text>
+  <text x="1900" y="815" text-anchor="end" fill="#2348FF" font-family="Arial, sans-serif" font-size="18" font-weight="700">01 / 01</text>
+</svg>
